@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binocular3D Plus · Visor 3D de repuestos, consumo y confiabilidad</title>
+<meta name="description" content="Visor 3D de repuestos para equipos mineros con drill-down por sistemas, subconjuntos y partes, más consumo de repuestos y confiabilidad de flota. Demostración con datos ficticios. INVICTUM SpA.">
+<meta property="og:title" content="Binocular3D Plus">
+<meta property="og:description" content="Del equipo completo al número de parte, en 3D. Consumo de repuestos y confiabilidad de flota.">
+<meta property="og:image" content="assets/capturas/vista-equipo.jpg">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1b2a;--panel:#14273b;--panel2:#1b3149;--line:#29415c;--ink:#f8f6f2;--mut:#a9b6c4;--acc:#f2b705;--acc2:#ffcf3f;--oro:#b8975a;--arena:#e9dcc0}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 16px/1.65 'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:inherit}
+.wrap{width:min(1160px,100% - 40px);margin:0 auto}
+header{position:sticky;top:0;z-index:5;background:rgba(13,27,42,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}.brand img{width:34px;height:34px}
+.brand .wm{font:700 19px/1.1 'DM Sans',sans-serif}.brand .wm b{color:var(--acc)}
+.brand small{display:block;font:500 .64rem/1.4 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--oro);margin-top:2px}
+nav{display:flex;gap:22px;align-items:center}nav a{text-decoration:none;color:var(--mut);font-size:14px}nav a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:#0d1b2a;border-radius:9px;padding:12px 18px;font:600 15px/1 'DM Sans',sans-serif;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--acc2)}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn.ghost:hover{border-color:var(--acc)}
+.btn.sm{padding:9px 14px;font-size:14px}
+.eyebrow{margin:0 0 12px;font:500 .74rem/1 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--oro)}
+.hero{position:relative;overflow:hidden;padding:72px 0 56px;background:radial-gradient(900px 500px at 85% 0%,#1d3a57 0%,transparent 70%),linear-gradient(180deg,#0d1b2a 0%,#10233a 100%)}
+.hero .wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:48px;align-items:center}
+h1{font:700 clamp(34px,4.6vw,54px)/1.06 'DM Sans',sans-serif;margin:0 0 18px;letter-spacing:-.01em}h1 em{font-style:normal;color:var(--acc)}
+.lead{font-size:18px;color:#dfe6ee;margin:0 0 26px;max-width:34em}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.note{margin-top:18px;font-size:13px;color:var(--mut)}
+.shot{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.5);background:#000}
+.shot img{display:block;width:100%;height:auto}
+section{padding:72px 0}section.alt{background:#10233a;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+h2{font:700 clamp(26px,3vw,36px)/1.15 'DM Sans',sans-serif;margin:0 0 14px}
+.sub{color:var(--mut);max-width:46em;margin:0 0 36px}
+.niv{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:n}
+.niv div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;position:relative}
+.niv div::before{counter-increment:n;content:counter(n);position:absolute;top:16px;right:18px;font:500 13px 'DM Mono',monospace;color:var(--oro)}
+.niv h3{margin:0 0 6px;font-size:18px}.niv p{margin:0;color:var(--mut);font-size:14.5px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--acc);border-radius:12px;padding:22px}
+.card h3{margin:0 0 8px;font-size:17.5px}.card p{margin:0;color:var(--mut);font-size:14.5px}
+.card.plus{border-top-color:#4fb3d9}.tag{display:inline-block;font:700 10.5px/1 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:5px 7px;border-radius:5px;margin-bottom:10px;background:rgba(79,179,217,.12);color:#9fdcf2;border:1px solid #4fb3d9}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+figure{margin:0}figcaption{color:var(--mut);font-size:13.5px;margin-top:10px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
+th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left}th{background:var(--panel2);font-weight:600}
+td.c,th.c{text-align:center;width:150px}.si{color:var(--acc);font-weight:700}.no{color:#6f8296}
+tr:last-child td{border-bottom:0}
+ol.pasos{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:p}
+ol.pasos li{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 20px 20px 62px;position:relative;color:var(--mut);font-size:14.5px}
+ol.pasos li::before{counter-increment:p;content:counter(p);position:absolute;left:18px;top:18px;width:30px;height:30px;border-radius:50%;background:var(--acc);color:#0d1b2a;font:700 15px/30px 'DM Sans',sans-serif;text-align:center}
+ol.pasos b{color:var(--ink);display:block;margin-bottom:4px;font-weight:600}
+.aviso{background:rgba(242,183,5,.08);border:1px solid rgba(242,183,5,.5);border-radius:12px;padding:18px 20px;color:#f3e6bf;font-size:14.5px}
+.final{text-align:center}.final .cta{justify-content:center}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
+@media (max-width:900px){.hero .wrap,.duo{grid-template-columns:1fr}.niv{grid-template-columns:1fr 1fr}.grid,ol.pasos{grid-template-columns:1fr}nav a:not(.btn){display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b> Plus</span><small>Visor de repuestos · INVICTUM SpA</small></div></a>
+    <nav>
+      <a href="#como">Cómo funciona</a>
+      <a href="#funciones">Funciones</a>
+      <a href="#versiones">Versiones</a>
+      <a class="btn sm" href="app/">Abrir el visor</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Equipos mineros en 3D</p>
+      <h1>Del equipo completo al <em>número de parte</em>, como en un mapa.</h1>
+      <p class="lead">Binocular3D Plus convierte el manual de partes de un camión de extracción en un modelo 3D navegable. Empiezas con la vista general y, al acercarte, aparecen los sistemas, los subconjuntos y cada número de parte. La versión Plus suma el consumo de repuestos y la confiabilidad de la flota sobre el mismo modelo.</p>
+      <div class="cta">
+        <a class="btn" href="app/">Abrir el visor Plus</a>
+        <a class="btn ghost" href="#como">Ver cómo funciona</a>
+      </div>
+      <p class="note">Demostración con un CAEX diésel-eléctrico genérico de 300 t y datos ficticios. Funciona en el navegador, sin instalar nada.</p>
+    </div>
+    <div class="shot"><img src="assets/capturas/vista-equipo.jpg" alt="Vista 3D del camión con acceso frontal, plataforma y cabina" width="1200" height="717"></div>
+  </div>
+</div>
+
+<section id="como">
+  <div class="wrap">
+    <p class="eyebrow">Cómo funciona</p>
+    <h2>Cuatro niveles de detalle, un solo modelo</h2>
+    <p class="sub">Como al acercarse en un mapa, cada nivel muestra más detalle. Cada elemento del modelo está enlazado con su lámina y su lista de partes.</p>
+    <div class="niv">
+      <div><h3>Equipo</h3><p>Vista general para girar, acercar y orientarse. La brújula indica el norte.</p></div>
+      <div><h3>Sistemas</h3><p>Motor, propulsión, hidráulico, frenos, eléctrico, cabina, tolva y más, con colores por sistema.</p></div>
+      <div><h3>Subconjuntos</h3><p>Grupos del manual ubicados sobre el modelo, con sus láminas.</p></div>
+      <div><h3>Partes</h3><p>Número de parte, descripción y cantidad, listos para el carro de compra o una nota.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="funciones" class="alt">
+  <div class="wrap">
+    <p class="eyebrow">Funciones</p>
+    <h2>Pensado para planificadores, bodegueros y mantenedores</h2>
+    <p class="sub">Todo lo de la versión estándar, más dos pestañas de gestión de flota.</p>
+    <div class="grid">
+      <div class="card"><h3>Drill-down 3D</h3><p>Rotación, zoom, cortes, despiece, aislamiento de ítems y búsqueda por número de parte.</p></div>
+      <div class="card"><h3>Interiores navegables</h3><p>Entra a la cabina y a los gabinetes de control, auxiliar 24 V, frenos y parrillas de retardo, con cada componente identificado.</p></div>
+      <div class="card"><h3>Recorridos y servicio</h3><p>Inspección guiada con lista de chequeo, puntos de servicio, flujo de energía y luces del tablero.</p></div>
+      <div class="card"><h3>Recetas de mantención</h3><p>Pautas y reparaciones que reúnen los repuestos necesarios y los agregan al carro de una vez.</p></div>
+      <div class="card"><h3>Misiones y modo caminar</h3><p>Ejercicios con cronómetro y medallas para aprender dónde está cada componente, recorriendo el equipo a pie.</p></div>
+      <div class="card"><h3>Importar manual</h3><p>Carga un manual de partes en PDF y el visor lo ordena por sistemas y subconjuntos.</p></div>
+      <div class="card plus"><span class="tag">Plus</span><h3>Consumo de repuestos</h3><p>Gasto por camión, sistema y mes, con mapa de calor 3D sobre el modelo y alertas de consumo anómalo.</p></div>
+      <div class="card plus"><span class="tag">Plus</span><h3>Confiabilidad</h3><p>Disponibilidad, MTBF, MTTR, Pareto de detenciones y vida de componentes (Weibull) por flota y por camión.</p></div>
+      <div class="card"><h3>Solicitud en PDF</h3><p>El carro entrega un PDF con el listado de repuestos y las hojas del manual con cada repuesto destacado, para descargar o enviar por correo o WhatsApp.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap duo">
+    <figure><div class="shot"><img src="assets/capturas/consumo-mapa-calor.jpg" alt="Mapa de calor de consumo de repuestos sobre el modelo 3D" loading="lazy" width="1200" height="717"></div><figcaption>Mapa de calor de consumo: los sistemas que más gastan se ven en el propio equipo.</figcaption></figure>
+    <figure><div class="shot"><img src="assets/capturas/interior-gabinete.jpg" alt="Interior del gabinete de control y potencia" loading="lazy" width="1200" height="717"></div><figcaption>Dentro del gabinete de control y potencia: inversores, choppers, barra bus y tarjetas de control.</figcaption></figure>
+  </div>
+</section>
+
+<section id="versiones" class="alt">
+  <div class="wrap">
+    <p class="eyebrow">Versiones</p>
+    <h2>Estándar y Plus</h2>
+    <p class="sub">La versión Plus incluye todo lo de la estándar y agrega la gestión de consumo y confiabilidad.</p>
+    <table>
+      <thead><tr><th>Función</th><th class="c">Estándar</th><th class="c">Plus</th></tr></thead>
+      <tbody>
+        <tr><td>Visor 3D con drill-down, cortes, despiece y búsqueda</td><td class="c si">✓</td><td class="c si">✓</td></tr>
+        <tr><td>Interiores, recorridos, recetas, misiones y modo caminar</td><td class="c si">✓</td><td class="c si">✓</td></tr>
+        <tr><td>Importar manual, carro con solicitud en PDF y notas</td><td class="c si">✓</td><td class="c si">✓</td></tr>
+        <tr><td>Consumo de repuestos y mapa de calor 3D</td><td class="c no">—</td><td class="c si">✓</td></tr>
+        <tr><td>Confiabilidad: MTBF, MTTR, Pareto y Weibull</td><td class="c no">—</td><td class="c si">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Para empezar</p>
+    <h2>Úsalo en tres pasos</h2>
+    <ol class="pasos" style="margin-top:28px">
+      <li><b>Abre el visor</b>Funciona en Chrome, Edge o Safari actualizados, en computador o tablet.</li>
+      <li><b>Acércate</b>Arrastra para girar y usa la rueda o los botones + y − para cambiar de nivel: equipo, sistemas, subconjuntos y partes.</li>
+      <li><b>Haz clic</b>Selecciona una pieza para ver su número de parte, o abre las pestañas Consumo y Confiab. para ver la flota.</li>
+    </ol>
+    <p class="aviso" style="margin-top:28px"><b>Datos de demostración.</b> El equipo es un CAEX diésel-eléctrico genérico de 300 t, modelado por INVICTUM SpA. Los números de parte, el catálogo, las láminas y los datos de consumo y confiabilidad son ficticios y no corresponden a ningún fabricante ni a ninguna faena. Binocular3D no está afiliado a ningún fabricante de equipos. Ver <a href="terminos.html">términos de uso</a> y <a href="privacidad.html">aviso de privacidad</a>.</p>
+  </div>
+</section>
+
+<section class="alt final">
+  <div class="wrap">
+    <h2>¿Quieres verlo con el manual de tu flota?</h2>
+    <p class="sub" style="margin:0 auto 26px">INVICTUM SpA carga los manuales de partes de tus equipos y los datos de tu flota en una versión privada.</p>
+    <div class="cta"><a class="btn" href="app/">Abrir el visor Plus</a><!-- CONTACTO: agrega aquí un botón con el correo comercial de INVICTUM SpA, por ejemplo <a class="btn ghost" href="mailto:...">Contactar</a> --></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span><img src="assets/invictum-simbolo.svg" alt="">© 2026 INVICTUM SpA · Binocular3D. Todos los derechos reservados.</span>
+    <span><a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos de uso</a> · Datos ficticios · Binocular3D no está afiliado a ningún fabricante</span>
+  </div>
+</footer>
+</body>
+</html>
