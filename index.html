@@ -9,8 +9,7 @@
 <meta property="og:description" content="Del equipo completo al número de parte, en 3D. Consumo de repuestos y confiabilidad de flota.">
 <meta property="og:image" content="assets/capturas/vista-equipo.jpg">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="fonts/fonts.css" rel="stylesheet">
 <style>
 :root{--bg:#0d1b2a;--panel:#14273b;--panel2:#1b3149;--line:#29415c;--ink:#f8f6f2;--mut:#a9b6c4;--acc:#f2b705;--acc2:#ffcf3f;--oro:#b8975a;--arena:#e9dcc0}
 *{box-sizing:border-box}
@@ -63,6 +62,8 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-siz
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
 footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
 @media (max-width:900px){.hero .wrap,.duo{grid-template-columns:1fr}.niv{grid-template-columns:1fr 1fr}.grid,ol.pasos{grid-template-columns:1fr}nav a:not(.btn){display:none}}
+#verMark{position:fixed;right:14px;bottom:12px;z-index:50;font:500 11px/1 "DM Mono",ui-monospace,monospace;letter-spacing:.3px;color:rgba(255,255,255,.55);background:rgba(10,14,22,.55);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 9px;pointer-events:none;backdrop-filter:blur(4px)}
+@media (max-width:600px){#verMark{font-size:10px;right:8px;bottom:8px}}
 </style>
 </head>
 <body>
@@ -175,9 +176,10 @@ footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
 
 <footer>
   <div class="wrap">
-    <span><img src="assets/invictum-simbolo.svg" alt="">© 2026 INVICTUM SpA · RUT <span data-dato="rut">[RUT de la empresa]</span> · <span data-dato="domicilio">[comuna y región]</span>, Chile · <a href="mailto:contacto@binocular3d.com">contacto@binocular3d.com</a></span>
+    <span><img src="assets/invictum-simbolo.svg" alt="">© 2026 INVICTUM SpA · RUT <span data-dato="rut">76.889.521-K</span> · <span data-dato="domicilio">Copiapó</span>, Chile · <a href="mailto:contacto@binocular3d.com">contacto@binocular3d.com</a></span>
     <span><a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos de uso</a> · <a href="LICENSE">Licencias</a> · Demostración con datos ficticios · Binocular3D no está afiliado a ningún fabricante de equipos</span>
   </div>
 </footer>
+<div id="verMark" aria-label="Versión del sitio">Sitio · v2.6.0 · actualizado 09-11-2026</div>
 </body>
 </html>
