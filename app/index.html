@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: data:; base-uri 'self'; form-action 'self' mailto: https://wa.me https://api.whatsapp.com">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: data:; base-uri 'self'; form-action 'self' mailto: https://wa.me https://api.whatsapp.com">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Binocular3D Plus · Consumo de repuestos y confiabilidad (datos ficticios)</title>
 <meta name="description" content="Binocular3D by INVICTUM: visor 3D de manuales de partes de equipos mineros, del equipo completo al número de parte.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="fonts/fonts.css" rel="stylesheet">
 <style>
 :root{
   --bg:#0d1b2a; --panel:#14273b; --panel2:#1b3149; --line:#29415c; --ink:#f8f6f2; --mut:#a9b6c4; --dim:#6b7a8c; --oro:#b8975a; --navy:#0d1b2a;
@@ -32,7 +31,7 @@ select:focus,input:focus,textarea:focus{outline:1px solid var(--acc);border-colo
 .btn.pri{background:var(--acc);color:#0d1b2a;border-color:var(--acc);font-weight:600}
 .btn.pri:hover{background:var(--acc2)}
 .btn.sm{padding:4px 8px;font-size:12px}
-main{display:grid;grid-template-columns:1fr 400px;min-height:0}
+main{display:grid;grid-template-columns:1fr auto;min-height:0}
 #stage{position:relative;overflow:hidden;min-height:0}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -88,12 +87,19 @@ main{display:grid;grid-template-columns:1fr 400px;min-height:0}
 #tools .btn.on{border-color:var(--acc);color:var(--acc)}
 #hint{display:none;position:absolute;right:62px;bottom:16px;font-size:11px;color:var(--mut);background:rgba(10,22,34,.75);padding:5px 9px;border-radius:4px;pointer-events:none}
 #demo{position:absolute;right:14px;top:14px;font-size:11px;background:rgba(10,22,34,.8);border:1px solid var(--line);color:var(--mut);padding:5px 9px;border-radius:4px;max-width:280px}
-aside{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
-.tabs{display:flex;border-bottom:1px solid var(--line)}
-.tabs button{flex:1;background:none;border:none;color:var(--mut);padding:12px 4px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent}
-.tabs button.on{color:var(--ink);border-bottom-color:var(--acc);font-weight:600}
-.pane{display:none;overflow:auto;flex:1;min-height:0}
+/* panel lateral plegable: banda vertical de pestañas a la derecha; el panel se abre al elegir una pestaña */
+aside{border-left:1px solid var(--line);background:var(--panel);display:grid;grid-template-columns:400px 50px;grid-template-rows:minmax(0,1fr);min-height:0;transition:grid-template-columns .18s ease}
+body.aside-cerrado aside{grid-template-columns:0 50px}
+.tabs{grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:stretch;border-left:1px solid var(--line);background:var(--panel2,var(--panel));padding:6px 0;gap:2px;overflow:hidden}
+.tabs button{position:relative;background:none;border:none;color:var(--mut);cursor:pointer;font-size:11.5px;font-weight:500;letter-spacing:.02em;padding:14px 0;writing-mode:vertical-rl;transform:rotate(180deg);border-right:3px solid transparent;border-radius:0;white-space:nowrap;min-height:60px;display:flex;align-items:center;justify-content:center;gap:6px}
+.tabs button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+.tabs button.on{color:var(--acc);border-right-color:var(--acc);font-weight:600;background:rgba(242,183,5,.08)}
+body.aside-cerrado .tabs button.on{color:var(--ink);border-right-color:transparent;background:none}
+.tabs button .badge{writing-mode:horizontal-tb;transform:rotate(180deg);margin:0}
+.tabs .asideTg{margin-top:auto;writing-mode:horizontal-tb;transform:none;min-height:40px;padding:8px 0;font-size:16px;color:var(--mut)}
+.pane{display:none;grid-column:1;grid-row:1;overflow:auto;min-height:0;min-width:0}
 .pane.on{display:block}
+body.aside-cerrado .pane{display:none}
 .pad{padding:14px}
 #search{width:100%}
 .meta{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:12px;margin:10px 0 4px}
@@ -200,8 +206,14 @@ table.prev select{padding:2px 4px;font-size:11px;max-width:120px}
 @media (max-width:860px){
   #app{height:auto;min-height:100vh}
   main{grid-template-columns:1fr;grid-template-rows:62vh auto}
-  aside{border-left:none;border-top:1px solid var(--line);max-height:none}
+  aside,body.aside-cerrado aside{border-left:none;border-top:1px solid var(--line);max-height:none;display:flex;flex-direction:column;grid-template-columns:none}
+  .tabs{flex-direction:row;border-left:none;border-bottom:1px solid var(--line);padding:0;gap:0;overflow-x:auto}
+  .tabs button{writing-mode:horizontal-tb;transform:none;min-height:0;padding:12px 10px;border-right:none;border-bottom:3px solid transparent;flex:1}
+  .tabs button.on{border-bottom-color:var(--acc)}
+  .tabs button .badge{transform:none}
+  .tabs .asideTg{display:none}
   .pane{overflow:visible}
+  body.aside-cerrado .pane.on{display:block}
   header .eqsel{display:none}
   #hint,#demo{display:none}
 }
@@ -269,7 +281,7 @@ body.fp #hud,body.fp #tools,body.fp #hint,body.fp #demo{display:none}
 /* ---- Normas gráficas Ecosistema Invictum v2.1 ---- */
 header{border-bottom:1px solid rgba(184,151,90,.45)!important}
 .ico{width:15px;height:15px;vertical-align:-3px;margin-right:6px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.endorse{display:flex;align-items:center;gap:6px;color:var(--mut);font:400 12px var(--sans)}.endorse img{width:14px;height:14px}.endorse span{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--ink)}.endorse span i{font-style:normal;color:#c8102e}
+.endorse{display:flex;align-items:center;gap:6px;color:var(--mut);font:400 12px var(--sans)}.endorse img{width:14px;height:14px}.endorse span{font-family:Georgia,'Times New Roman',serif;font-size:15px;color:var(--ink)}.endorse span i{font-style:normal;color:#c8102e}
 
 .legal{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:14px;background:rgba(255,255,255,.02)}
 .legal details{border-top:1px solid var(--line);padding:6px 0}.legal summary{cursor:pointer;font-weight:600;font-size:13px}.legal p{font-size:12px;line-height:1.5;color:var(--mut);margin:6px 0}
@@ -373,7 +385,7 @@ body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.7)}
       <button class="btn" id="bInt" title="Ver el interior de gabinetes y carcasas">Int</button>
       <div id="intMenu"><b>Entrar y ver desde adentro</b><button data-int="cab">Cabina del operador</button><button data-int="potencia">Gabinete de control y potencia</button><button data-int="aux24">Gabinete auxiliar 24 V</button><button data-int="grid">Banco de parrillas de retardo</button><button data-int="frenos">Gabinete de frenos</button><button data-int="axle">Axle box (eje trasero)</button></div>
     </div>
-    <div id="verMark" aria-label="Versión de la aplicación">Plus · v2.5.0 · actualizada 07-11-2026</div>
+    <div id="verMark" aria-label="Versión de la aplicación">Plus · v2.6.0 · actualizada 09-11-2026</div>
     <div id="zoom"><button class="btn" id="bBack" title="Volver a la vista anterior (tecla Retroceso o Z)" disabled>↶</button><button class="btn" id="bKeys" title="Atajos de teclado (?)">?</button><button class="btn" id="zin" title="Acercar (o Ctrl + rueda)">+</button><button class="btn" id="zout" title="Alejar">−</button><button class="btn fs" id="bFs" title="Pantalla completa">⛶</button></div>
     <div id="modeBar"><span id="modeTxt"></span><button id="modeX">Terminar</button></div>
     <div id="noteDlg"><div class="box"><h3 style="margin-top:0">Nueva nota sobre el equipo</h3><p class="status" id="noteWhere" style="margin-top:0"></p><textarea id="noteTxt" placeholder="Ej.: fuga en manguera de levante, revisar en próxima pauta"></textarea><div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end"><button class="btn sm" id="noteCancel">Cancelar</button><button class="btn sm pri" id="noteSave">Guardar nota</button></div></div></div>
@@ -2922,7 +2934,7 @@ function focusSubassembly(i,si){
   renderTree(); renderDetail(); renderCrumb(); $('#tab-tree').scrollTop=0;
 }
 function selectPart(i,si,pi,{fly=true}={}){
-  histPush(); closeRing();
+  histPush(); closeRing(); if(window.innerWidth>860) activarTab('tree'); // al elegir una parte se abre el panel con su detalle
   if(focusSys!==i){ focusSys=i; applyMaterials(); }
   focusSub=si; selPart={sys:i,si,pi};
   const p=BOM.sistemas[i].subs[si].partes[pi];
@@ -3865,10 +3877,16 @@ setTimeout(()=>checkPerf(3),2500);
 $('#bSpin').onclick=e=>{ controls.autoRotate=!controls.autoRotate; controls.autoRotateSpeed=0.8; e.currentTarget.classList.toggle('on',controls.autoRotate); };
 const dolly=f=>{ const t=controls.target, off=camera.position.clone().sub(t); const nd=THREE.MathUtils.clamp(off.length()*f,controls.minDistance,controls.maxDistance); flyTo(t.clone(),nd); };
 $('#zin').onclick=()=>dolly(0.6); $('#zout').onclick=()=>dolly(1.6);
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='tab-'+b.dataset.tab));
+/* Panel lateral plegable: por defecto cerrado para dejar más área al 3D. Clic en una pestaña lo abre; clic en la pestaña activa o en ‹› lo cierra. */
+function asideAbrir(on){ document.body.classList.toggle('aside-cerrado',!on); const t=$('.tabs .asideTg'); if(t){ t.textContent=on?'›':'‹'; t.title=on?'Ocultar el panel (más espacio para el 3D)':'Mostrar el panel'; t.setAttribute('aria-expanded',on?'true':'false'); } setTimeout(resize,200); }
+function activarTab(id,{abrir=true}={}){ document.querySelectorAll('.tabs button[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===id)); document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='tab-'+id)); if(abrir) asideAbrir(true); }
+{ const tabs=$('.tabs'); const tg=document.createElement('button'); tg.className='asideTg'; tg.type='button'; tg.setAttribute('aria-label','Mostrar u ocultar el panel'); tabs.appendChild(tg); tg.onclick=()=>asideAbrir(document.body.classList.contains('aside-cerrado')); }
+document.querySelectorAll('.tabs button[data-tab]').forEach(b=>b.onclick=()=>{
+  const yaActiva=b.classList.contains('on'), cerrado=document.body.classList.contains('aside-cerrado');
+  if(yaActiva&&!cerrado){ asideAbrir(false); return; }
+  activarTab(b.dataset.tab);
 });
+asideAbrir(false);
 function exportBOM(){ return JSON.stringify({equipo:BOM.equipo,sistemas:BOM.sistemas.map(s=>({id:s.id,nombre:s.nombre,subconjuntos:s.subs.map(u=>({nombre:u.nombre,ancla:u._pos?u._pos.toArray().map(v=>+v.toFixed(2)):null,partes:u.partes.map(p=>({pn:p.pn,desc:p.desc,qty:p.qty,ref:p.ref??null,pag:p.pag??null,xyz:p._pos.toArray().map(v=>+v.toFixed(2))}))}))}))},null,1); }
 async function copyText(txt,label,box){ try{ await navigator.clipboard.writeText(txt); toast(label+' copiado'); } catch { const b=box||$('#copybox'); b.style.display='block'; b.value=txt; b.select(); toast('Selecciona y copia el texto'); } }
 $('#bCopyJson').onclick=()=>copyText(exportBOM(),'BOM');
@@ -4039,14 +4057,14 @@ function commit(append){
   }
   base.sistemas.sort((a,b)=>SYS_ORDER.indexOf(a.id)-SYS_ORDER.indexOf(b.id));
   BOM=prepararBOM(base); rebuild(); resetView();
-  document.querySelector('.tabs button[data-tab="tree"]').click();
+  activarTab('tree',{abrir:false});
   toast(`${rows.length} ítems cargados`);
 }
 function loadJSON(j){
   const sistemas=(j.sistemas||[]).map(s=>{ const id=SYS[s.id]?s.id:sysFromName(s.nombre||s.id||''); return {id,nombre:s.nombre||SYS[id].n,
     subs:(s.subconjuntos||s.subs||[]).map(u=>({nombre:u.nombre||'General',ancla:u.ancla||null,partes:(u.partes||[]).map(p=>({pn:p.pn||p.numero_parte,desc:p.desc||p.descripcion||'—',qty:p.qty??p.cantidad??'',ref:p.ref??'',pag:p.pag??p.pagina??'',xyz:p.xyz||null}))}))}; });
   if(!sistemas.length) throw new Error('JSON sin "sistemas"');
-  BOM=prepararBOM({equipo:j.equipo||{tipo:'Equipo'},sistemas}); rebuild(); resetView(); document.querySelector('.tabs button[data-tab="tree"]').click();
+  BOM=prepararBOM({equipo:j.equipo||{tipo:'Equipo'},sistemas}); rebuild(); resetView(); activarTab('tree',{abrir:false});
 }
 
 /* ---------------- Información requerida ---------------- */
@@ -4092,7 +4110,7 @@ $('#reqContent').insertAdjacentHTML('afterbegin',`<div class="legal">
 <details><summary>No afiliación</summary>
 <p>Binocular3D no está afiliado, patrocinado ni aprobado por ningún fabricante de equipos. Las versiones de demostración muestran un equipo genérico modelado por INVICTUM SpA, con números de parte, láminas, costos y datos de confiabilidad ficticios. Las marcas que se mencionen pertenecen a sus dueños y se usan solo para identificar productos.</p></details>
 <details><summary>Licencias de terceros</summary>
-<p>three.js (MIT) · PDF.js (Apache 2.0) · jsPDF (MIT) · DM Sans, DM Mono y Cormorant Garamond (SIL Open Font License 1.1).</p></details>
+<p>three.js (MIT) · PDF.js (Apache 2.0) · jsPDF (MIT) · DM Sans y DM Mono (SIL Open Font License 1.1), alojadas en el propio sitio.</p></details>
 <p class="note">© 2026 INVICTUM SpA · Binocular3D. Todos los derechos reservados.</p>
 </div>`);
 
@@ -4526,7 +4544,7 @@ function setBajo(on){ if(BAJO===on) return; BAJO=on; ground.visible=!on; scene.t
   const st=document.getElementById('stage'); if(st){ st.setAttribute('role','application'); st.setAttribute('aria-label','Visor 3D del equipo. Atajos de teclado con la tecla ?'); }
   const lbl=document.getElementById('labels'); if(lbl) lbl.setAttribute('aria-hidden','true');
 })();
-window.__app={THREE,FRAME,vistaAtras,atajosPanel,setLigero,get LIGERO(){return LIGERO;},tolvaToggle,escToggle,setBajo,get MEC(){return MEC;},cfg:{get v(){return CFG;},set:(k,v)=>{CFG[k]=v;applyCfg();},reset:()=>{Object.assign(CFG,{zoom:1,rot:1,mira:1,invY:false,camina:1,inercia:true,zoomCursor:true,ctrlZoom:true});applyCfg();}},walk:{on:()=>walkOn(),off:()=>walkOff(),escala:()=>walkEscala(),accion:()=>walkAccion(),cerca:()=>walkCerca(),tercera:()=>toggleTercera(),get esTercera(){return WALK.tercera;},get W(){return WALK;},get activo(){return FP.on&&FP.lugar==='walk';}},hitPoint:(cx,cy)=>{const h=hitPoint({clientX:cx,clientY:cy});return h?h.point.toArray():null;},flyToP:(t,dist,dir,then)=>{flyTo(new THREE.Vector3(...t),dist,dir?new THREE.Vector3(...dir):null); if(anim&&then) anim.then=then;},project:p=>{const v=new THREE.Vector3(...p),dc=v.distanceTo(camera.position),dm=center.distanceTo(camera.position);v.project(camera);const r=renderer.domElement;return {x:(v.x+1)/2*r.clientWidth,y:(1-v.y)/2*r.clientHeight,front:v.z<1,far:dc>dm+1.5};},setLabelsVisible:v=>{labelsEl.style.visibility=v?'':'hidden';},get scene(){return scene;},entrarLugar,salirLugar,LUG,setHeat:h=>{heatMap=h;applyMaterials();},get focusSys(){return focusSys;},get FP(){return FP;},verCabina,salirCabina,fpMirar,fpAsiento,FP_POI,galAbrir,galCerrar,get GAL(){return GAL;},fotoSistema,fotoMallas,fotoEnsamble,get MODELOS(){return MODELOS;},abrirEncl,cerrarEncl,get ENCL(){return ENCL;},get meshes(){return meshes;},foto:d=>fotoParte({desc:d},{nombre:"x"},0),ds:()=>ds,modeloDe,focusSubassembly,cargarEquipo,get EQ(){return EQ;},dsSet:v=>{dsOn=v;},openCluster,closeRing,get ring(){return ring;},setShadows,setExplode:v=>{explodeF=v;$('#explode').value=v*100;applyExplode();},setMode,addMeasurePoint,get notes(){return notes;},addToCart,get cart(){return cart;},hashFor,openFromHash,cam:(a,t)=>{anim=null;camera.position.set(...a);controls.target.set(...t);controls.update();},get BOM(){return BOM;},focusSystem,selectPart,resetView,parseManualLines,parseCSV,classify,labels:()=>labels};
+window.__app={THREE,FRAME,activarTab,asideAbrir,vistaAtras,atajosPanel,setLigero,get LIGERO(){return LIGERO;},tolvaToggle,escToggle,setBajo,get MEC(){return MEC;},cfg:{get v(){return CFG;},set:(k,v)=>{CFG[k]=v;applyCfg();},reset:()=>{Object.assign(CFG,{zoom:1,rot:1,mira:1,invY:false,camina:1,inercia:true,zoomCursor:true,ctrlZoom:true});applyCfg();}},walk:{on:()=>walkOn(),off:()=>walkOff(),escala:()=>walkEscala(),accion:()=>walkAccion(),cerca:()=>walkCerca(),tercera:()=>toggleTercera(),get esTercera(){return WALK.tercera;},get W(){return WALK;},get activo(){return FP.on&&FP.lugar==='walk';}},hitPoint:(cx,cy)=>{const h=hitPoint({clientX:cx,clientY:cy});return h?h.point.toArray():null;},flyToP:(t,dist,dir,then)=>{flyTo(new THREE.Vector3(...t),dist,dir?new THREE.Vector3(...dir):null); if(anim&&then) anim.then=then;},project:p=>{const v=new THREE.Vector3(...p),dc=v.distanceTo(camera.position),dm=center.distanceTo(camera.position);v.project(camera);const r=renderer.domElement;return {x:(v.x+1)/2*r.clientWidth,y:(1-v.y)/2*r.clientHeight,front:v.z<1,far:dc>dm+1.5};},setLabelsVisible:v=>{labelsEl.style.visibility=v?'':'hidden';},get scene(){return scene;},entrarLugar,salirLugar,LUG,setHeat:h=>{heatMap=h;applyMaterials();},get focusSys(){return focusSys;},get FP(){return FP;},verCabina,salirCabina,fpMirar,fpAsiento,FP_POI,galAbrir,galCerrar,get GAL(){return GAL;},fotoSistema,fotoMallas,fotoEnsamble,get MODELOS(){return MODELOS;},abrirEncl,cerrarEncl,get ENCL(){return ENCL;},get meshes(){return meshes;},foto:d=>fotoParte({desc:d},{nombre:"x"},0),ds:()=>ds,modeloDe,focusSubassembly,cargarEquipo,get EQ(){return EQ;},dsSet:v=>{dsOn=v;},openCluster,closeRing,get ring(){return ring;},setShadows,setExplode:v=>{explodeF=v;$('#explode').value=v*100;applyExplode();},setMode,addMeasurePoint,get notes(){return notes;},addToCart,get cart(){return cart;},hashFor,openFromHash,cam:(a,t)=>{anim=null;camera.position.set(...a);controls.target.set(...t);controls.update();},get BOM(){return BOM;},focusSystem,selectPart,resetView,parseManualLines,parseCSV,classify,labels:()=>labels};
 window.__app.__dist=()=>camera.position.distanceTo(controls.target); window.__app.__tgt=()=>controls.target.toArray().map(v=>+v.toFixed(2));
 </script>
 <script>
@@ -5647,7 +5665,7 @@ body.walk #hud,body.walk #tools,body.walk #demo{display:none}
   (function esperar() {
     const app = window.__app; if (!app || !app.BOM || !app.BOM.sistemas || !app.BOM.sistemas.length) return setTimeout(esperar, 200);
     generar(app.BOM); bind(); window.__plus = { D, S, render, ANOM, CX, MESES };
-    document.querySelector('.tabs button[data-tab="cons"]').click();
+    if (app.activarTab) { app.activarTab('cons', { abrir: false }); render(); } else document.querySelector('.tabs button[data-tab="cons"]').click(); // pestaña Consumo lista, panel plegado
   })();
 })();
 
