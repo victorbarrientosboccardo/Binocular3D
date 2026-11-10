@@ -67,7 +67,7 @@ main{display:grid;grid-template-columns:1fr auto;min-height:0}
 #tools .grp{display:flex;align-items:center;gap:6px;background:rgba(20,39,59,.92);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--mut)}
 #tools .grp input[type=range]{width:110px;accent-color:#f2b705}
 #tools .grp select{padding:3px 4px;font-size:12px}
-#views{position:absolute;right:14px;bottom:140px;display:flex;flex-direction:column;flex-wrap:wrap-reverse;align-content:flex-end;gap:4px;max-height:calc(100% - 200px)}
+#views{position:absolute;right:14px;bottom:196px;display:flex;flex-direction:column;flex-wrap:wrap-reverse;align-content:flex-end;gap:4px;max-height:calc(100% - 256px)}
 @media (max-height:720px){#views .btn{height:26px;font-size:10px}#views{gap:3px}}
 #views .btn{width:36px;height:30px;padding:0;font-size:11px;background:rgba(20,39,59,.92)}
 #zoom .btn.fs{font-size:14px}
@@ -263,6 +263,7 @@ table.prev select{padding:2px 4px;font-size:11px;max-width:120px}
 
 /* Galería 3D integrada */
 .gbtn{margin-right:10px;border-color:var(--acc);color:var(--acc2)}
+#bInicio{text-decoration:none}#bInicio[hidden]{display:none}
 #gal{position:fixed;inset:0;background:rgba(13,27,42,.97);z-index:55;display:none;flex-direction:column}
 #gal.on{display:flex}
 .galh{display:flex;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
@@ -340,6 +341,7 @@ body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.4)}
 <header>
   <div class="brand"><img class="mark" src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Visor de repuestos</small></div></div><span class="anon" title="Esta versión no contiene datos de ningún fabricante"><i></i>Versión anonimizada · datos ficticios</span>
   <div class="sp"></div>
+  <a class="btn gbtn" id="bInicio" href="../" title="Volver al sitio de inicio de Binocular3D"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M10 20v-6h4v6"/></svg>Inicio</a>
   <button class="btn gbtn" id="bGal" title="Galería 3D de todos los componentes del equipo"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Galería 3D</button>
   <select class="eqsel" id="eqType" title="Tipo de equipo"><option>Cargando…</option></select>
 </header>
@@ -390,7 +392,7 @@ body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.4)}
       <button class="btn" id="bInt" title="Ver el interior de gabinetes y carcasas">Int</button>
       <div id="intMenu"><b>Entrar y ver desde adentro</b><button data-int="cab">Cabina del operador</button><button data-int="potencia">Gabinete de control y potencia</button><button data-int="aux24">Gabinete auxiliar 24 V</button><button data-int="grid">Banco de parrillas de retardo</button><button data-int="frenos">Gabinete de frenos</button><button data-int="axle">Axle box (eje trasero)</button></div>
     </div>
-    <div id="verMark" aria-label="Versión de la aplicación">v2.6.0, 09.11.26</div>
+    <div id="verMark" aria-label="Versión de la aplicación">v2.6.1, 10.11.26</div>
     <div id="zoom"><button class="btn" id="bBack" title="Volver a la vista anterior (tecla Retroceso o Z)" disabled>↶</button><button class="btn" id="bKeys" title="Atajos de teclado (?)">?</button><button class="btn" id="zin" title="Acercar (o Ctrl + rueda)">+</button><button class="btn" id="zout" title="Alejar">−</button><button class="btn fs" id="bFs" title="Pantalla completa">⛶</button></div>
     <div id="modeBar"><span id="modeTxt"></span><button id="modeX">Terminar</button></div>
     <div id="noteDlg"><div class="box"><h3 style="margin-top:0">Nueva nota sobre el equipo</h3><p class="status" id="noteWhere" style="margin-top:0"></p><textarea id="noteTxt" placeholder="Ej.: fuga en manguera de levante, revisar en próxima pauta"></textarea><div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end"><button class="btn sm" id="noteCancel">Cancelar</button><button class="btn sm pri" id="noteSave">Guardar nota</button></div></div></div>
@@ -4117,7 +4119,9 @@ $('#reqContent').insertAdjacentHTML('afterbegin',`<div class="legal">
 
 /* ---------------- Ciclo ---------------- */
 function rebuild(){ dsClose(true); focusSys=null;focusSub=null;selPart=null; computeAnchors(); buildLabels(); renderChips(); renderTree(); renderDetail(); renderCrumb(); applyMaterials(); }
-function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); labels.forEach(L=>L.w=0); }
+function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); labels.forEach(L=>L.w=0); acomodarVistas(); }
+// La columna de vistas se apoya sobre la barra de zoom (↶ ? + − ⛶): se calcula su altura real para que nunca se superpongan.
+function acomodarVistas(){ const v=$('#views'),z=$('#zoom'); if(!v||!z) return; const zb=z.getBoundingClientRect(), sb=stage.getBoundingClientRect(); const bottom=Math.round(sb.bottom-zb.top)+8; v.style.bottom=bottom+'px'; v.style.maxHeight=Math.max(120,sb.height-bottom-60)+'px'; }
 new ResizeObserver(resize).observe(stage);
 resize(); renderer.domElement.style.cursor='grab'; renderCart(); renderNotes();
 async function cargarEquipo(id,inicial){
