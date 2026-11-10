@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /app/vendor/
+Disallow: /app/data/
+Sitemap: https://www.binocular3d.com/sitemap.xml

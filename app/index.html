@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Binocular3D Plus · Consumo de repuestos y confiabilidad (datos ficticios)</title>
-<meta name="description" content="Binocular3D by INVICTUM: visor 3D de manuales de partes de equipos mineros, del equipo completo al número de parte.">
+<meta name="description" content="Binocular3D: visor 3D de manuales de partes de equipos mineros, del equipo completo al número de parte.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link href="fonts/fonts.css" rel="stylesheet">
 <style>
@@ -67,7 +67,8 @@ main{display:grid;grid-template-columns:1fr auto;min-height:0}
 #tools .grp{display:flex;align-items:center;gap:6px;background:rgba(20,39,59,.92);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--mut)}
 #tools .grp input[type=range]{width:110px;accent-color:#f2b705}
 #tools .grp select{padding:3px 4px;font-size:12px}
-#views{position:absolute;right:14px;bottom:140px;display:flex;flex-direction:column;gap:4px}
+#views{position:absolute;right:14px;bottom:140px;display:flex;flex-direction:column;flex-wrap:wrap-reverse;align-content:flex-end;gap:4px;max-height:calc(100% - 200px)}
+@media (max-height:720px){#views .btn{height:26px;font-size:10px}#views{gap:3px}}
 #views .btn{width:36px;height:30px;padding:0;font-size:11px;background:rgba(20,39,59,.92)}
 #zoom .btn.fs{font-size:14px}
 .lbl.note{background:#2b6cb0;color:#fff;font-size:11px;padding:3px 8px 3px 20px;border-radius:12px;max-width:220px;white-space:normal}
@@ -216,6 +217,9 @@ table.prev select{padding:2px 4px;font-size:11px;max-width:120px}
   body.aside-cerrado .pane.on{display:block}
   header .eqsel{display:none}
   #hint,#demo{display:none}
+  body,#app{overflow-x:hidden}
+  main,aside,.pane,#stage{min-width:0;max-width:100vw}
+  .pane{overflow-x:auto}
 }
 
 #detail .foto{position:relative;margin:8px 0 4px;border-radius:8px;overflow:hidden;background:#f8f6f2;min-height:40px}
@@ -228,6 +232,22 @@ table.prev select{padding:2px 4px;font-size:11px;max-width:120px}
 #detail .docs{display:flex;flex-wrap:wrap;gap:5px}
 #detail .docs h5{width:100%}
 #detail .docs .btn span{color:var(--mut);margin-left:4px}
+@media (max-width:600px){
+  #tools{left:8px;right:8px;bottom:8px;max-width:none;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+  #tools>*{flex:0 0 auto}
+  #tools .grp input[type=range]{width:70px}
+  #zoom{right:8px;bottom:56px}
+  #views{right:8px;bottom:268px;max-height:calc(100% - 330px)}
+  #brujula{display:none}
+  header{gap:8px;padding:0 10px;flex-wrap:nowrap;overflow:hidden}
+  header .brand small{display:none}
+  header .endorse{display:none}
+  header .gbtn{padding:5px 8px;font-size:11px}
+  #views .btn{width:32px;height:26px;font-size:10px}
+  #verMark{display:none}
+  #hud{max-width:calc(100% - 60px)}
+  #ladder .lv{padding:3px 6px;font-size:10px}
+}
 #views{position:absolute}
 #intMenu{display:none;position:absolute;right:46px;bottom:0;min-width:240px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:20}
 #intMenu.on{display:block}
@@ -299,8 +319,8 @@ header{border-bottom:1px solid rgba(184,151,90,.45)!important}
 button:focus-visible,.btn:focus-visible,.chip:focus-visible,.tabs button:focus-visible{outline:2px solid #ffd54a;outline-offset:2px}
 
 /* marca de agua con la versión y la fecha de actualización */
-#verMark{position:absolute;right:62px;bottom:14px;font:500 10.5px 'DM Mono',monospace;letter-spacing:.04em;color:rgba(255,255,255,.78);background:rgba(13,27,42,.45);padding:2px 7px;border-radius:4px;pointer-events:none;z-index:5;white-space:nowrap}
-body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.7)}
+#verMark{position:absolute;right:62px;bottom:12px;font:500 11px 'DM Mono',monospace;letter-spacing:.04em;color:rgba(255,255,255,.45);text-shadow:0 1px 2px rgba(0,0,0,.5);pointer-events:none;z-index:5;white-space:nowrap;user-select:none}
+body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.4)}
 
 /* ---- Versión anonimizada ---- */
 .anon{display:inline-flex;align-items:center;gap:8px;margin-left:16px;padding:5px 12px 5px 10px;border-radius:999px;background:rgba(201,210,220,.08);border:1px solid #c9d2dc;color:#dfe5ec;font:600 11.5px/1 'DM Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
@@ -332,9 +352,8 @@ body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.7)}
 <body>
 <div id="app">
 <header>
-  <div class="brand"><img class="mark" src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Visor de repuestos · Ecosistema Invictum</small></div></div><span class="anon plusB" title="Consumo de repuestos por CAEX y mes con datos ficticios"><i></i>Plus anonimizado · consumo y confiabilidad ficticios</span>
+  <div class="brand"><img class="mark" src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Visor de repuestos</small></div></div><span class="anon plusB" title="Consumo de repuestos por CAEX y mes con datos ficticios"><i></i>Plus anonimizado · consumo y confiabilidad ficticios</span>
   <div class="sp"></div>
-  <div class="endorse" title="Producto del Ecosistema Invictum"><svg viewBox="0 0 8 8" width="14" height="14" aria-hidden="true"><rect x=".3" y=".3" width="3.4" height="3.4" rx=".45" fill="#c8102e"/><rect x="4.3" y=".3" width="3.4" height="3.4" rx=".45" fill="#c8102e"/><rect x=".3" y="4.3" width="3.4" height="3.4" rx=".45" fill="#c8102e"/><rect x="4.3" y="4.3" width="3.4" height="3.4" rx=".45" fill="#9b0d23" fill-opacity=".6"/></svg><span>Invictum <i>SPA</i></span></div>
   <button class="btn gbtn" id="bGal" title="Galería 3D de todos los componentes del equipo"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Galería 3D</button>
   <select class="eqsel" id="eqType" title="Tipo de equipo"><option>Cargando…</option></select>
 </header>
@@ -385,7 +404,7 @@ body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.7)}
       <button class="btn" id="bInt" title="Ver el interior de gabinetes y carcasas">Int</button>
       <div id="intMenu"><b>Entrar y ver desde adentro</b><button data-int="cab">Cabina del operador</button><button data-int="potencia">Gabinete de control y potencia</button><button data-int="aux24">Gabinete auxiliar 24 V</button><button data-int="grid">Banco de parrillas de retardo</button><button data-int="frenos">Gabinete de frenos</button><button data-int="axle">Axle box (eje trasero)</button></div>
     </div>
-    <div id="verMark" aria-label="Versión de la aplicación">Plus · v2.6.0 · actualizada 09-11-2026</div>
+    <div id="verMark" aria-label="Versión de la aplicación">v2.6.0, 09.11.26</div>
     <div id="zoom"><button class="btn" id="bBack" title="Volver a la vista anterior (tecla Retroceso o Z)" disabled>↶</button><button class="btn" id="bKeys" title="Atajos de teclado (?)">?</button><button class="btn" id="zin" title="Acercar (o Ctrl + rueda)">+</button><button class="btn" id="zout" title="Alejar">−</button><button class="btn fs" id="bFs" title="Pantalla completa">⛶</button></div>
     <div id="modeBar"><span id="modeTxt"></span><button id="modeX">Terminar</button></div>
     <div id="noteDlg"><div class="box"><h3 style="margin-top:0">Nueva nota sobre el equipo</h3><p class="status" id="noteWhere" style="margin-top:0"></p><textarea id="noteTxt" placeholder="Ej.: fuga en manguera de levante, revisar en próxima pauta"></textarea><div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end"><button class="btn sm" id="noteCancel">Cancelar</button><button class="btn sm pri" id="noteSave">Guardar nota</button></div></div></div>
@@ -2851,7 +2870,7 @@ for(const [l,n,x,z] of CARD){ const c=document.createElement('canvas'); c.width=
 const brujula=document.createElement('div'); brujula.id='brujula'; brujula.title='Orientación: el norte está donde apunta la flecha roja';
 brujula.innerHTML='<svg viewBox="-50 -50 100 100"><circle r="46" fill="rgba(13,27,42,.88)" stroke="#29415c" stroke-width="2"/><g id="brRosa"><path d="M0,-34 L7,0 L0,6 L-7,0 Z" fill="#c8102e"/><path d="M0,34 L7,0 L0,-6 L-7,0 Z" fill="#c9d2dc"/><text y="-37" text-anchor="middle" font-size="13" font-weight="700" fill="#ff5a6e">N</text><text y="45" text-anchor="middle" font-size="11" font-weight="700" fill="#c9d2dc">S</text><text x="41" y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#c9d2dc">E</text><text x="-41" y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#c9d2dc">O</text></g></svg>';
 $('#stage').appendChild(brujula);
-{ const st=document.createElement('style'); st.textContent='#brujula{position:absolute;right:58px;top:128px;width:66px;height:66px;z-index:5;pointer-events:auto;cursor:pointer;font-family:DM Sans,sans-serif}#brujula svg{width:100%;height:100%;display:block}'; document.head.appendChild(st); }
+{ const st=document.createElement('style'); st.textContent='#brujula{position:absolute;right:58px;top:128px;width:66px;height:66px;z-index:5;pointer-events:auto;cursor:pointer;font-family:DM Sans,sans-serif}#brujula svg{width:100%;height:100%;display:block}@media (max-height:720px){#brujula{right:104px;top:66px;width:56px;height:56px}}'; document.head.appendChild(st); }
 brujula.addEventListener('click',()=>{ if(FP.on) return; const t=controls.target.clone(), d=camera.position.distanceTo(t); flyTo(t,d,new THREE.Vector3(0,0.55,1)); toast('Vista mirando al norte'); });
 const _fw=new THREE.Vector3();
 function brujulaTick(){ camera.getWorldDirection(_fw); const rumbo=Math.atan2(_fw.x,-_fw.z); const r=$('#brRosa'); if(r) r.setAttribute('transform','rotate('+(-rumbo*180/Math.PI).toFixed(1)+')'); }
@@ -3595,7 +3614,7 @@ async function cartPdfBuild(){
     doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.text(String(it.n),14,y); doc.setFont('courier','bold'); doc.text(String(c.pn),21,y); doc.setFont('helvetica','normal'); doc.text(d,56,y); doc.setFont('helvetica','bold'); doc.text(String(c.n),126,y,{align:'center'}); doc.setFont('helvetica','normal'); doc.setTextColor(...MUTC); doc.text(s2,137,y); doc.setTextColor(30,30,30); y+=h; }
   y+=4; if(y>270){ doc.addPage('a4','p'); y=20; } doc.setFontSize(8); doc.setTextColor(...MUTC);
   doc.text(doc.splitTextToSize('Las páginas siguientes muestran cada hoja del manual donde aparecen estos repuestos. Cada repuesto está destacado con un círculo rojo y su número de línea (#) de este listado.'+(BOM.equipo&&/demo|ficticio/i.test(JSON.stringify(BOM.equipo))?' Catálogo de demostración: números de parte ficticios.':''),182),14,y);
-  y+=10; { const av='IMPORTANTE: verifique cada número de parte, cantidad y aplicabilidad contra el manual vigente del fabricante y el número de serie del equipo antes de comprar o instalar. Este documento es una ayuda de búsqueda generada por Binocular3D (INVICTUM SpA) y no reemplaza al manual. Binocular3D no está afiliado a ningún fabricante.'; const L2=doc.splitTextToSize(av,176); const hh=L2.length*3.8+5; if(y+hh>285){ doc.addPage('a4','p'); y=20; }
+  y+=10; { const av='IMPORTANTE: verifique cada número de parte, cantidad y aplicabilidad contra el manual vigente del fabricante y el número de serie del equipo antes de comprar o instalar. Este documento es una ayuda de búsqueda generada por Binocular3D (Binocular3D) y no reemplaza al manual. Binocular3D no está afiliado a ningún fabricante.'; const L2=doc.splitTextToSize(av,176); const hh=L2.length*3.8+5; if(y+hh>285){ doc.addPage('a4','p'); y=20; }
     doc.setDrawColor(208,2,27); doc.setFillColor(255,246,230); doc.rect(12,y-4,186,hh,'FD'); doc.setTextColor(120,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text(L2,15,y); doc.setFont('helvetica','normal'); }
   // --- hojas del manual
   const grupos=new Map(); for(const it of items){ if(!it.u) continue; if(!grupos.has(it.u)) grupos.set(it.u,[]); grupos.get(it.u).push(it); }
@@ -4101,17 +4120,17 @@ $('#reqContent').innerHTML=`
 $('#reqContent').insertAdjacentHTML('afterbegin',`<div class="legal">
 <h4 style="margin-top:0">Aviso legal</h4>
 <details><summary>Privacidad</summary>
-<p>Este visor no tiene servidor y no recopila datos personales. El carro, las notas, los ajustes, el ranking de misiones y los datos de la solicitud (nombre, equipo y observaciones) se guardan solo en este navegador y puedes borrarlos vaciando el carro o los datos del sitio. Los manuales que importas se procesan en tu propio equipo y no se envían a nadie. Cuando envías una solicitud por correo o WhatsApp, la envías tú con tu aplicación; INVICTUM SpA no recibe ni guarda esa información. Las tipografías y bibliotecas se cargan desde servicios públicos (Google Fonts y jsDelivr), que pueden registrar tu dirección IP según sus propias políticas.</p>
-<p>Consultas sobre privacidad: INVICTUM SpA.</p></details>
+<p>Este visor no tiene servidor y no recopila datos personales. El carro, las notas, los ajustes, el ranking de misiones y los datos de la solicitud (nombre, equipo y observaciones) se guardan solo en este navegador y puedes borrarlos vaciando el carro o los datos del sitio. Los manuales que importas se procesan en tu propio equipo y no se envían a nadie. Cuando envías una solicitud por correo o WhatsApp, la envías tú con tu aplicación; Binocular3D no recibe ni guarda esa información. Las tipografías y bibliotecas se cargan desde servicios públicos (Google Fonts y jsDelivr), que pueden registrar tu dirección IP según sus propias políticas.</p>
+<p>Consultas sobre privacidad: privacidad@binocular3d.com.</p></details>
 <details><summary>Términos de uso</summary>
-<p>Binocular3D es un software de INVICTUM SpA. Esta versión se entrega solo para demostración y evaluación. Se ofrece «tal cual», sin garantía de exactitud, disponibilidad ni idoneidad para un fin determinado.</p>
-<p>Antes de comprar o instalar un repuesto, verifica cada número de parte, cantidad y aplicabilidad contra el manual vigente del fabricante y el número de serie del equipo. INVICTUM SpA no responde por compras, instalaciones o decisiones tomadas solo con esta herramienta.</p>
-<p>No está permitido copiar, modificar, desensamblar ni redistribuir el software sin autorización escrita de INVICTUM SpA. Estos términos se rigen por la ley chilena.</p></details>
+<p>Esta versión de Binocular3D se entrega solo para demostración y evaluación. Se ofrece «tal cual», sin garantía de exactitud, disponibilidad ni idoneidad para un fin determinado.</p>
+<p>Antes de comprar o instalar un repuesto, verifica cada número de parte, cantidad y aplicabilidad contra el manual vigente del fabricante y el número de serie del equipo. Binocular3D no responde por compras, instalaciones o decisiones tomadas solo con esta herramienta.</p>
+<p>No está permitido copiar, modificar, desensamblar ni redistribuir el software sin autorización escrita de Binocular3D. Estos términos se rigen por la ley chilena.</p></details>
 <details><summary>No afiliación</summary>
-<p>Binocular3D no está afiliado, patrocinado ni aprobado por ningún fabricante de equipos. Las versiones de demostración muestran un equipo genérico modelado por INVICTUM SpA, con números de parte, láminas, costos y datos de confiabilidad ficticios. Las marcas que se mencionen pertenecen a sus dueños y se usan solo para identificar productos.</p></details>
+<p>Binocular3D no está afiliado, patrocinado ni aprobado por ningún fabricante de equipos. Las versiones de demostración muestran un equipo genérico modelado por Binocular3D, con números de parte, láminas, costos y datos de confiabilidad ficticios. Las marcas que se mencionen pertenecen a sus dueños y se usan solo para identificar productos.</p></details>
 <details><summary>Licencias de terceros</summary>
 <p>three.js (MIT) · PDF.js (Apache 2.0) · jsPDF (MIT) · DM Sans y DM Mono (SIL Open Font License 1.1), alojadas en el propio sitio.</p></details>
-<p class="note">© 2026 INVICTUM SpA · Binocular3D. Todos los derechos reservados.</p>
+<p class="note">© 2026 Binocular3D. Todos los derechos reservados.</p>
 </div>`);
 
 /* ---------------- Ciclo ---------------- */

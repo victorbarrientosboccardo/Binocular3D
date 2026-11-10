@@ -1,16 +1,18 @@
-# Binocular3D Plus · sitio de demostración
+# Binocular3D · sitio de demostración
 
 Sitio estático listo para publicar en **GitHub Pages**. Contiene:
 
 | Carpeta / archivo | Qué es |
 |---|---|
-| `index.html` | Página de presentación de Binocular3D Plus |
-| `app/` | El visor 3D Plus completo (consumo de repuestos y confiabilidad), con sus librerías en `app/vendor/` |
+| `index.html` | Página de presentación de Binocular3D |
+| `app/` | El visor 3D versión Plus (consumo de repuestos y confiabilidad), con sus librerías en `app/vendor/` |
+| `app-estandar/` | El visor 3D versión Estándar |
 | `assets/` | Logos, ícono y capturas de pantalla |
 | `privacidad.html` y `terminos.html` | Aviso de privacidad y términos de uso |
 | `404.html` | Página para direcciones inexistentes |
 | `.nojekyll` | Indica a GitHub Pages que publique los archivos tal cual |
-| `LICENSE` | Derechos de INVICTUM SpA y licencias de terceros |
+| `LICENSE` / `licencias.txt` | Derechos de INVICTUM SpA y licencias de terceros (la copia .txt se muestra en el navegador) |
+| `robots.txt`, `sitemap.xml` | Indexación del sitio |
 
 Todo el contenido es de demostración: un CAEX diésel-eléctrico genérico de 300 t modelado por INVICTUM SpA, con números de parte, catálogo, láminas y datos de consumo y confiabilidad **ficticios**. No incluye manuales de fabricantes ni datos de ninguna faena.
 
@@ -24,7 +26,7 @@ Todo el contenido es de demostración: un CAEX diésel-eléctrico genérico de 3
      cd binocular3d-plus-github
      git init -b main
      git add .
-     git commit -m "Binocular3D Plus: sitio de demostración"
+     git commit -m "Binocular3D: sitio de demostración"
      git remote add origin https://github.com/USUARIO/binocular3d-plus.git
      git push -u origin main
      ```
@@ -34,7 +36,7 @@ Todo el contenido es de demostración: un CAEX diésel-eléctrico genérico de 3
 ## Requisitos
 
 - Navegador actualizado (Chrome, Edge, Safari o Firefox) con WebGL.
-- No necesita conexión a internet para el visor: three.js, PDF.js y jsPDF vienen copiados en `app/vendor/`. Solo las tipografías se cargan desde Google Fonts y, si no hay conexión, se usan las del sistema.
+- No necesita conexión a internet para el visor: three.js, PDF.js y jsPDF vienen copiados en `app/vendor/`. Las tipografías también vienen en `fonts/`; antes se cargaban desde Google Fonts y, si no hay conexión, se usan las del sistema.
 
 ## Antes de publicar
 
@@ -44,6 +46,6 @@ Todo el contenido es de demostración: un CAEX diésel-eléctrico genérico de 3
 
 ## Actualizar el visor
 
-Reemplaza el contenido de `app/` por la nueva versión Plus (`index.html`, `data/`, `assets/` y `vendor/`) y sube los cambios. La versión y la fecha de actualización aparecen abajo a la derecha del visor. La página de presentación no necesita cambios.
+Reemplaza el contenido de `app/` (Plus) y `app-estandar/` (Estándar) por la nueva versión (`index.html`, `data/`, `assets/` y `vendor/`) y sube los cambios. La versión y la fecha de actualización aparecen abajo a la derecha del visor. La página de presentación no necesita cambios.
 
 © 2026 INVICTUM SpA. Todos los derechos reservados.

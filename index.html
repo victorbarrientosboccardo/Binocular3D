@@ -3,18 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Binocular3D Plus · Visor 3D de repuestos, consumo y confiabilidad</title>
-<meta name="description" content="Visor 3D de repuestos para equipos mineros con drill-down por sistemas, subconjuntos y partes, más consumo de repuestos y confiabilidad de flota. Demostración con datos ficticios. INVICTUM SpA.">
-<meta property="og:title" content="Binocular3D Plus">
+<title>Binocular3D · Visor 3D de repuestos, consumo y confiabilidad</title>
+<meta name="description" content="Visor 3D de repuestos para equipos mineros con drill-down por sistemas, subconjuntos y partes, más consumo de repuestos y confiabilidad de flota. Demostración con un camión minero (CAEX) y datos genéricos. Versiones Estándar y Plus.">
+<meta property="og:title" content="Binocular3D">
 <meta property="og:description" content="Del equipo completo al número de parte, en 3D. Consumo de repuestos y confiabilidad de flota.">
-<meta property="og:image" content="assets/capturas/vista-equipo.jpg">
+<meta property="og:image" content="https://www.binocular3d.com/assets/capturas/vista-equipo.jpg">
+<meta property="og:url" content="https://www.binocular3d.com/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.binocular3d.com/">
+<meta name="theme-color" content="#0d1b2a">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link href="fonts/fonts.css" rel="stylesheet">
 <style>
 :root{--bg:#0d1b2a;--panel:#14273b;--panel2:#1b3149;--line:#29415c;--ink:#f8f6f2;--mut:#a9b6c4;--acc:#f2b705;--acc2:#ffcf3f;--oro:#b8975a;--arena:#e9dcc0}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:300 16px/1.65 'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif}
+body{margin:0;position:relative;background:var(--bg);color:var(--ink);font:300 16px/1.65 'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif}
 a{color:inherit}
 .wrap{width:min(1160px,100% - 40px);margin:0 auto}
 header{position:sticky;top:0;z-index:5;background:rgba(13,27,42,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
@@ -61,20 +67,22 @@ ol.pasos b{color:var(--ink);display:block;margin-bottom:4px;font-weight:600}
 footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-size:13px}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
 footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
+footer .ver{flex-basis:100%;text-align:right;font:500 11px 'DM Mono',monospace;letter-spacing:.04em;color:rgba(255,255,255,.28);user-select:none}
+.piloto{text-align:center}.piloto h2{max-width:760px;margin-left:auto;margin-right:auto}.piloto .cta{justify-content:center}
 @media (max-width:900px){.hero .wrap,.duo{grid-template-columns:1fr}.niv{grid-template-columns:1fr 1fr}.grid,ol.pasos{grid-template-columns:1fr}nav a:not(.btn){display:none}}
-#verMark{position:fixed;right:14px;bottom:12px;z-index:50;font:500 11px/1 "DM Mono",ui-monospace,monospace;letter-spacing:.3px;color:rgba(255,255,255,.55);background:rgba(10,14,22,.55);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 9px;pointer-events:none;backdrop-filter:blur(4px)}
-@media (max-width:600px){#verMark{font-size:10px;right:8px;bottom:8px}}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap">
-    <a class="brand" href="#"><img src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b> Plus</span><small>Visor de repuestos · INVICTUM SpA</small></div></a>
+    <a class="brand" href="#"><img src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Visor de repuestos</small></div></a>
     <nav>
       <a href="#como">Cómo funciona</a>
       <a href="#funciones">Funciones</a>
       <a href="#versiones">Versiones</a>
-      <a class="btn sm" href="app/">Abrir el visor</a>
+<a href="#piloto">Prueba piloto</a>
+      <a class="btn sm ghost" href="app-estandar/">Estándar</a>
+<a class="btn sm" href="app/">Plus</a>
     </nav>
   </div>
 </header>
@@ -84,12 +92,13 @@ footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
     <div>
       <p class="eyebrow">Equipos mineros en 3D</p>
       <h1>Del equipo completo al <em>número de parte</em>, como en un mapa.</h1>
-      <p class="lead">Binocular3D Plus convierte el manual de partes de un camión de extracción en un modelo 3D navegable. Empiezas con la vista general y, al acercarte, aparecen los sistemas, los subconjuntos y cada número de parte. La versión Plus suma el consumo de repuestos y la confiabilidad de la flota sobre el mismo modelo.</p>
+      <p class="lead">Binocular3D convierte el manual en un modelo 3D navegable. Empiezas con la vista general y, al acercarte, aparecen los sistemas, los subconjuntos y cada número de parte. La versión Plus suma el consumo de repuestos y la confiabilidad de la flota sobre el mismo modelo.</p>
       <div class="cta">
-        <a class="btn" href="app/">Abrir el visor Plus</a>
+        <a class="btn ghost" href="app-estandar/">Abrir versión Estándar</a>
+        <a class="btn" href="app/">Abrir versión Plus</a>
         <a class="btn ghost" href="#como">Ver cómo funciona</a>
       </div>
-      <p class="note">Demostración con un CAEX diésel-eléctrico genérico de 300 t y datos ficticios. Funciona en el navegador, sin instalar nada.</p>
+      <p class="note">Demostración con un camión minero (CAEX) y datos genéricos. Funciona en el navegador, sin instalar nada.</p>
     </div>
     <div class="shot"><img src="assets/capturas/vista-equipo.jpg" alt="Vista 3D del camión con acceso frontal, plataforma y cabina" width="1200" height="717"></div>
   </div>
@@ -120,7 +129,7 @@ footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
       <div class="card"><h3>Recorridos y servicio</h3><p>Inspección guiada con lista de chequeo, puntos de servicio, flujo de energía y luces del tablero.</p></div>
       <div class="card"><h3>Recetas de mantención</h3><p>Pautas y reparaciones que reúnen los repuestos necesarios y los agregan al carro de una vez.</p></div>
       <div class="card"><h3>Misiones y modo caminar</h3><p>Ejercicios con cronómetro y medallas para aprender dónde está cada componente, recorriendo el equipo a pie.</p></div>
-      <div class="card"><h3>Importar manual</h3><p>Carga un manual de partes en PDF y el visor lo ordena por sistemas y subconjuntos.</p></div>
+      <div class="card"><h3>Importar manual</h3><p>El propio usuario puede cargar su manual de partes en PDF y el visor lo ordena por sistemas y subconjuntos.</p></div>
       <div class="card plus"><span class="tag">Plus</span><h3>Consumo de repuestos</h3><p>Gasto por camión, sistema y mes, con mapa de calor 3D sobre el modelo y alertas de consumo anómalo.</p></div>
       <div class="card plus"><span class="tag">Plus</span><h3>Confiabilidad</h3><p>Disponibilidad, MTBF, MTTR, Pareto de detenciones y vida de componentes (Weibull) por flota y por camión.</p></div>
       <div class="card"><h3>Solicitud en PDF</h3><p>El carro entrega un PDF con el listado de repuestos y las hojas del manual con cada repuesto destacado, para descargar o enviar por correo o WhatsApp.</p></div>
@@ -151,6 +160,7 @@ footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
       </tbody>
     </table>
   </div>
+<div class="cta" style="margin-top:22px"><a class="btn ghost" href="app-estandar/">Abrir versión Estándar</a><a class="btn" href="app/">Abrir versión Plus</a></div>
 </section>
 
 <section>
@@ -162,24 +172,32 @@ footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
       <li><b>Acércate</b>Arrastra para girar y usa la rueda o los botones + y − para cambiar de nivel: equipo, sistemas, subconjuntos y partes.</li>
       <li><b>Haz clic</b>Selecciona una pieza para ver su número de parte, o abre las pestañas Consumo y Confiab. para ver la flota.</li>
     </ol>
-    <p class="aviso" style="margin-top:28px"><b>Datos de demostración.</b> El equipo es un CAEX diésel-eléctrico genérico de 300 t, modelado por INVICTUM SpA. Los números de parte, el catálogo, las láminas y los datos de consumo y confiabilidad son ficticios y no corresponden a ningún fabricante ni a ninguna faena. Binocular3D no está afiliado a ningún fabricante de equipos. Ver <a href="terminos.html">términos de uso</a> y <a href="privacidad.html">aviso de privacidad</a>.</p>
   </div>
 </section>
 
+<section id="piloto">
+  <div class="wrap piloto">
+    <p class="eyebrow">Prueba piloto abierta</p>
+    <h2>Si quieres usar Binocular3D en tu faena y aportar al desarrollo, solicita tu acceso.</h2>
+    <p class="sub">Respondemos por WhatsApp.</p>
+    <div class="cta"><a class="btn" href="https://wa.me/56965945170?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20la%20prueba%20piloto%20de%20Binocular3D" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4.1c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>Solicitar por WhatsApp</a></div>
+  </div>
+</section>
 <section class="alt final">
   <div class="wrap">
     <h2>¿Quieres verlo con el manual de tu flota?</h2>
-    <p class="sub" style="margin:0 auto 26px">INVICTUM SpA carga los manuales de partes de tus equipos y los datos de tu flota en una versión privada.</p>
-    <div class="cta"><a class="btn" href="app/">Abrir el visor Plus</a><a class="btn ghost" href="mailto:contacto@binocular3d.com?subject=Binocular3D%20Plus">Contactar a INVICTUM</a></div>
+    <p class="sub" style="margin:0 auto 26px">Tú mismo cargas los manuales de partes de tus equipos y los datos de tu flota en una versión privada.</p>
+    <div class="cta"><a class="btn" href="app/">Abrir el visor Plus</a><a class="btn ghost" href="https://wa.me/56965945170?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20la%20prueba%20piloto%20de%20Binocular3D" target="_blank" rel="noopener">Solicitar por WhatsApp</a></div>
   </div>
 </section>
 
+<div class="wrap" style="padding:36px 0"><p class="aviso"><b>Datos de demostración.</b> El equipo es un CAEX, modelado por INVICTUM SpA. Los números de parte, el catálogo, las láminas y los datos de consumo y confiabilidad son ficticios y no corresponden a ningún fabricante ni a ninguna faena. Binocular3D no está afiliado a ningún fabricante de equipos. Ver <a href="terminos.html">términos de uso</a> y <a href="privacidad.html">aviso de privacidad</a>.</p></div>
 <footer>
   <div class="wrap">
-    <span><img src="assets/invictum-simbolo.svg" alt="">© 2026 INVICTUM SpA · RUT <span data-dato="rut">76.889.521-K</span> · <span data-dato="domicilio">Copiapó</span>, Chile · <a href="mailto:contacto@binocular3d.com">contacto@binocular3d.com</a></span>
-    <span><a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos de uso</a> · <a href="LICENSE">Licencias</a> · Demostración con datos ficticios · Binocular3D no está afiliado a ningún fabricante de equipos</span>
+    <span><img src="assets/favicon.svg" alt="">© 2026 BINOCULAR3D · Copiapó, Chile</span>
+    <span><a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos de uso</a> · <a href="licencias.txt">Licencias</a> · Demostración con datos genéricos · Binocular3D no está afiliado a ningún fabricante de equipos</span>
+    <span class="ver" aria-label="Versión del sitio">v2.6.0, 09.11.26</span>
   </div>
 </footer>
-<div id="verMark" aria-label="Versión del sitio">Sitio · v2.6.0 · actualizado 09-11-2026</div>
 </body>
 </html>
