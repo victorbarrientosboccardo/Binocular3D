@@ -392,7 +392,7 @@ body.walk #verMark,body.fp #verMark{color:rgba(255,255,255,.4)}
       <button class="btn" id="bInt" title="Ver el interior de gabinetes y carcasas">Int</button>
       <div id="intMenu"><b>Entrar y ver desde adentro</b><button data-int="cab">Cabina del operador</button><button data-int="potencia">Gabinete de control y potencia</button><button data-int="aux24">Gabinete auxiliar 24 V</button><button data-int="grid">Banco de parrillas de retardo</button><button data-int="frenos">Gabinete de frenos</button><button data-int="axle">Axle box (eje trasero)</button></div>
     </div>
-    <div id="verMark" aria-label="Versión de la aplicación">v2.6.1, 10.11.26</div>
+    <div id="verMark" aria-label="Versión de la aplicación">v2.17.1, 11.11.26</div>
     <div id="zoom"><button class="btn" id="bBack" title="Volver a la vista anterior (tecla Retroceso o Z)" disabled>↶</button><button class="btn" id="bKeys" title="Atajos de teclado (?)">?</button><button class="btn" id="zin" title="Acercar (o Ctrl + rueda)">+</button><button class="btn" id="zout" title="Alejar">−</button><button class="btn fs" id="bFs" title="Pantalla completa">⛶</button></div>
     <div id="modeBar"><span id="modeTxt"></span><button id="modeX">Terminar</button></div>
     <div id="noteDlg"><div class="box"><h3 style="margin-top:0">Nueva nota sobre el equipo</h3><p class="status" id="noteWhere" style="margin-top:0"></p><textarea id="noteTxt" placeholder="Ej.: fuga en manguera de levante, revisar en próxima pauta"></textarea><div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end"><button class="btn sm" id="noteCancel">Cancelar</button><button class="btn sm pri" id="noteSave">Guardar nota</button></div></div></div>
@@ -1935,7 +1935,7 @@ window.B3D_ajP=ajP;
    sólo para lo que va montado en ruedas/ejes, y nunca dentro del volumen de un neumático. */
 const RG_SUB=/WHEEL MOTOR|BRAKE ASSEMBLY|SPINDLE|\bHUB\b|TRANSMISSION|PARKING BRAKE|\bRIM\b|TIRE|AXLE|BRAKE APPLY|UPRIGHT MUD FLAP|SPEED SENSOR|ROCK EJECT/i;
 const RUEDAS_AJ=()=>{ const f=AJ.FX0+AJ.dxr, r=AJ.RX0+AJ.dxr; return [[f,3.2],[f,-3.2],[r,1.9],[r,3.48],[r,-1.9],[r,-3.48]]; };
-function ancSub(s,u){ let [x,y,z]=u.ancla;
+function ancSub(s,u){ if(u.fija) return u.ancla.slice(); let [x,y,z]=u.ancla; // fija: ancla ya dada en coordenadas finales
   for(const r of REUB){ const b=r.b; if(x>=b[0]&&x<=b[1]&&y>=b[2]&&y<=b[3]&&z>=b[4]&&z<=b[5]){ z+=r.dz; break; } }
   const rg=['ruedas','suspdel','susptras'].includes(s.id)||RG_SUB.test(u.nombre);
   if(rg) x+=AJ.dxr; if(/HOIST CYLINDER/i.test(u.nombre)) x+=0.6; if(/ROCK EJECT/i.test(u.nombre)&&Math.abs(z)>1) z=Math.sign(z)*2.69;
@@ -1957,7 +1957,7 @@ function ajustarMallas(){
       || (s==='protecciones'&&c.x<2.2&&c.x>1.0&&bb.max.y<3.5);
     let mov=false;
     if(rg){ m.position.x+=AJ.dxr; mov=true; m.userData.rg=true; }
-    else if(s==='combustible'&&c.x<1.7&&c.x>-1.2&&c.z<-1.8){ m.position.x-=0.2; mov=true; }
+    else if(s==='combustible'&&c.x<1.7&&c.x>-1.2&&c.z>1.8){ m.position.x-=0.2; mov=true; }
     const warp = !(rg&&s!=='suspdel');
     if(warp){ const x0=bb.min.x+(rg?AJ.dxr:0), x1=bb.max.x+(rg?AJ.dxr:0);
       if(ajW(x1)>0&&bb.max.y>AJ.y1){
@@ -1984,7 +1984,7 @@ function ajustarMallas(){
     m.position.set(0,0,0); m.quaternion.identity(); m.scale.set(1,1,1); m.updateMatrixWorld(true); if(m.userData.p0) m.userData.p0.copy(m.position); if(m.userData.bb) m.userData.bb.setFromObject(m); }
   // arneses, cañerías y mangueras: ningún vértice dentro de las duales traseras internas (cara interna z = ±1,44)
   const rx=AJ.RX0+AJ.dxr;
-  for(const m of [...truck.children]){ const s=m.userData.sys; if(!m.isMesh||m.userData.despeje||!['electrico','incendio','hidraulico','misc','combustible','bastidor','propulsion'].includes(s)) continue;
+  for(const m of [...truck.children]){ const s=m.userData.sys; if(!m.isMesh||m.userData.despeje||!['electrico','incendio','hidraulico','misc','bastidor','propulsion'].includes(s)) continue;
     const bb=new THREE.Box3().setFromObject(m); if(bb.max.x<rx-2.1||bb.min.x>rx+2.1||bb.max.y<0||bb.min.y>4.0||(bb.max.z<1.18&&bb.min.z>-1.18)) continue;
     m.userData.despeje=true; m.updateMatrix(); const M4=m.matrix.clone(); const g=m.geometry.clone().applyMatrix4(M4), pp=g.attributes.position; let n=0;
     for(let i=0;i<pp.count;i++){ const x=pp.getX(i), y=pp.getY(i), z=pp.getZ(i); if(Math.abs(z)>1.18&&Math.abs(z)<2.6&&Math.hypot(x-rx,y-1.95)<2.05&&Math.hypot(x-rx,y-1.95)>1.2){ pp.setZ(i,Math.sign(z)*1.18); n++; } }
@@ -2001,13 +2001,14 @@ const C={yel:'#e2a400',dark:'#2a2a2a',tire:'#1d1d1d',steel:'#8d9399',black:'#151
 function aclarar(c,o){ const k=new THREE.Color(c), h={}; if(o.claro===false) return k; k.getHSL(h,THREE.SRGBColorSpace);
   if(h.l<0.6) h.l=(o.rough??0.55)>=0.88 ? 0.36+h.l*0.5 : 0.44+h.l*0.42; // gomas algo más oscuras que el resto
   k.setHSL(h.h,h.s,h.l,THREE.SRGBColorSpace); return k; }
+let SUBT=null; // patrón del subconjunto del manual que corresponde a las mallas que se crean a continuación (null = por cercanía)
 function addMesh(sys, geom, color, pos, o={}){
   color=aclarar(color,o);
   const mat=new THREE.MeshStandardMaterial({color, metalness:o.metal??0.2, roughness:o.rough??0.55, transparent:o.opacity!=null, opacity:o.opacity??1, wireframe:!!o.wire, side:o.wire?THREE.DoubleSide:THREE.FrontSide});
   const m=new THREE.Mesh(geom,mat); m.position.set(...pos); m.castShadow=!o.wire&&(o.opacity==null||o.opacity>0.5); m.receiveShadow=true;
   if(o.rot) m.rotation.set(...o.rot);
   if(o.quat) m.quaternion.copy(o.quat);
-  m.userData={sys, base:new THREE.Color(color), baseOp:o.opacity??1};
+  m.userData={sys, base:new THREE.Color(color), baseOp:o.opacity??1}; if(o.sub||SUBT) m.userData.sub=o.sub||SUBT;
   if(o.edges!==false && (geom.type==='BoxGeometry'||geom.type==='ExtrudeGeometry')) m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geom,30),edgeMat));
   truck.add(m); meshes.push(m); return m;
 }
@@ -2027,6 +2028,9 @@ function cylBetween(sys,a,b,r,color){
   const mid=A.add(B).multiplyScalar(0.5);
   return addMesh(sys,cylY(r,len,16),color,[mid.x,mid.y,mid.z],{quat:q,metal:0.7,rough:0.3});
 }
+const FINO=[]; // detalle fino (pernería, bridas, graseras): mallas no seleccionables que solo se muestran al acercarse
+function fino(sys,geos,color,o={}){ const m=new THREE.Mesh(mergeGeometries(geos.map(g=>g.index?g.toNonIndexed():g)),new THREE.MeshStandardMaterial({color,metalness:o.metal??0.65,roughness:o.rough??0.4}));
+  m.userData.noAJ=true; m.userData.finoSys=sys; m.visible=false; m.raycast=()=>{}; truck.add(m); FINO.push(m); return m; }
 const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su interior
 (function buildCAEX(){
   // Proporciones de referencia (CAEX de 300 t): distancia entre ejes ~6,35 m, neumático 53/80R63 (Ø ~3,9 m)
@@ -2054,16 +2058,26 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
   wheel(FX,3.2,true); wheel(FX,-3.2,true);
   wheel(RX,1.9,false); wheel(RX,3.48,true); wheel(RX,-1.9,false); wheel(RX,-3.48,true); // trocha trasera 5,38 m
   // ---------- J · Bastidor: largueros con cajón, travesaños, horse collar, parachoques
-  for(const z of [1.1,-1.1]) addMesh('bastidor',box(11.0,1.0,0.5),C.yel,[0.6,2.3,z]);
+  { // largueros de peralte variable: vientre profundo entre ejes, cola levantada con la oreja del pivote de tolva, tramo delantero recto
+    const pf=new THREE.Shape(); [[-5.15,2.8],[-4.6,2.3],[-3.6,1.95],[-2.4,1.6],[0.2,1.55],[1.4,1.8],[6.1,1.8],[6.1,2.8],[1.0,2.8],[-1.4,2.95],[-3.8,3.3],[-4.3,3.55],[-4.75,3.7],[-5.1,3.45],[-5.22,3.05]].forEach((q,i)=>i?pf.lineTo(q[0],q[1]):pf.moveTo(q[0],q[1]));
+    for(const z of [1.1,-1.1]){ const m=addMesh('bastidor',new THREE.ExtrudeGeometry(pf,{depth:0.5,bevelEnabled:false}).translate(0,0,z-0.25),C.yel,[0,0,0]); m.userData.noAJ=true; }
+    // alas superior e inferior siguiendo el perfil, y alojamientos redondos del costado
+    const al=[], oj=[]; const tramo=(a,b,z)=>{ const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy); al.push(new THREE.BoxGeometry(L,0.05,0.62).rotateZ(Math.atan2(dy,dx)).translate((a[0]+b[0])/2,(a[1]+b[1])/2,z)); };
+    for(const z of [1.1,-1.1]){ [[[6.1,2.82],[1.0,2.82]],[[1.0,2.82],[-1.4,2.97]],[[-1.4,2.97],[-3.8,3.32]],[[6.1,1.78],[1.4,1.78]],[[1.4,1.78],[0.2,1.53]],[[0.2,1.53],[-2.4,1.58]],[[-2.4,1.58],[-3.6,1.93]],[[-3.6,1.93],[-4.6,2.28]]].forEach(t=>tramo(t[0],t[1],z));
+      for(const y of [2.55,1.98]){ oj.push(new THREE.TorusGeometry(0.2,0.045,8,24).translate(-1.35,y,z+Math.sign(z)*0.26)); oj.push(cylZ(0.15,0.04,20).translate(-1.35,y,z+Math.sign(z)*0.25)); } }
+    const ma=M('bastidor',al,'#d29a00',{rough:0.5}); ma.userData.noAJ=true; const mo=M('bastidor',oj,'#b98d0e',{rough:0.5}); mo.userData.noAJ=true; }
   for(const x of [-3.6,-0.6,3.0]) addMesh('bastidor',box(0.45,0.7,2.2),C.yel,[x,2.3,0]);
-  const hc=new THREE.TorusGeometry(1.35,0.22,10,28,Math.PI); hc.rotateY(Math.PI/2);
-  addMesh('bastidor',hc,C.yel,[1.75,2.75,0],{metal:0.3,edges:false});
+  addMesh('bastidor',cylZ(0.24,1.9,24),C.yel,[-4.35,2.85,0]);                                                    // tubo de torsión trasero
+  { // collar (horse collar): anillo ovalado cerrado que abraza el tren de potencia y da apoyo al frente de la tolva
+    const o=new THREE.Shape(); o.absellipse(0,2.55,1.65,1.7,0,Math.PI*2,false,0); const h=new THREE.Path(); h.absellipse(0,2.55,1.2,1.3,0,Math.PI*2,true,0); o.holes.push(h);
+    const g=new THREE.ExtrudeGeometry(o,{depth:0.4,bevelEnabled:false,curveSegments:28}).translate(0,0,-0.2).rotateY(Math.PI/2).translate(1.75,0,0);
+    const m=addMesh('bastidor',g,C.yel,[0,0,0],{metal:0.3}); m.userData.noAJ=true; }
   addMesh('bastidor',new RoundedBoxGeometry(0.75,1.0,6.1,3,0.08),C.yel,[6.15,2.25,0],{edges:false});
   // ---------- L · Plataformas: cubierta con borde, barandas tubulares, escala diagonal con peldaños
-  addMesh('plataformas',box(3.4,0.12,8.8),'#4b4f54',[4.85,4.75,0],{metal:0.6,rough:0.5});
+  addMesh('plataformas',box(3.4,0.12,8.8),'#cf9800',[4.85,4.75,0],{metal:0.3,rough:0.7});
   addMesh('plataformas',box(3.4,0.25,0.08),'#ffb300',[4.85,4.62,4.4],{edges:false,claro:false}); addMesh('plataformas',box(3.4,0.25,0.08),'#ffb300',[4.85,4.62,-4.4],{edges:false,claro:false});
-  // barandas en amarillo de seguridad saturado (sin aclarar) y tubos más gruesos para que se lean contra la tolva y el piso claro
-  const RAIL='#ffb300', RO={metal:0.25,rough:0.45,claro:false};
+  // barandas en gris grafito (como en las referencias de terreno), sin aclarar y con tubos gruesos para que se lean contra la tolva y la cubierta amarilla
+  const RAIL='#3b3f44', RO={metal:0.25,rough:0.45,claro:false};
   { const rails=[];
     for(const z of [-4.35,4.35]){ rails.push(T(cylX(0.055,3.4,10),4.85,5.85,z).toNonIndexed(),T(cylX(0.045,3.4,10),4.85,5.35,z).toNonIndexed());
       for(const x of [3.2,4.3,5.4,6.5]) rails.push(T(cylY(0.05,1.1,10),x,5.3,z).toNonIndexed()); }
@@ -2127,7 +2141,7 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
   //            amortiguador de vibraciones, poleas, bombas de agua, filtros, ECM, motores de arranque y soportes.
   { const NI=g=>g.index?g.toNonIndexed():g, RB=(w,h,d,r=0.04)=>new RoundedBoxGeometry(w,h,d,2,r);
     const X0=2.05, X1=4.55, XM=(X0+X1)/2, L=X1-X0, P=0.29;                     // largo del bloque y paso entre cilindros
-    const cylX_=(r,w,s=32)=>cylX(r,w,s), gris='#5f646b', grisO='#4c5056', alu='#9aa1a8', negro='#26282b';
+    const cylX_=(r,w,s=32)=>cylX(r,w,s), gris='#d2a214', grisO='#b98d0e', alu='#9aa1a8', negro='#26282b';
     // bloque y cárter
     const blk=[T(RB(L,0.8,1.05,0.06),XM,3.0,0)];
     for(let i=0;i<9;i++) for(const sd of [1,-1]) blk.push(T(new THREE.BoxGeometry(0.05,0.62,0.06),X0+0.12+i*P,2.98,sd*0.53));
@@ -2170,7 +2184,7 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     M('motor',[cylX_(0.78,0.32,40).translate(X0-0.2,3.05,0),cylX_(0.55,0.14,36).translate(X0-0.4,3.05,0)],grisO,{metal:0.45,rough:0.5});
     { const b=[]; for(let i=0;i<16;i++){ const a=i/16*Math.PI*2; b.push(cylX_(0.02,0.04,8).translate(X0-0.37,3.05+Math.cos(a)*0.72,Math.sin(a)*0.72)); } M('motor',b,alu,{metal:0.7}); }
     // motores de arranque (2), bajo la carcasa del volante
-    for(const sd of [1,-1]) M('motor',[cylX_(0.1,0.42,20).translate(X0+0.05,2.55,sd*0.55),cylX_(0.07,0.12,16).translate(X0-0.2,2.55,sd*0.55),RB(0.16,0.12,0.12,0.02).translate(X0+0.05,2.7,sd*0.55)],'#2d3034',{metal:0.4,rough:0.5});
+    for(const sd of [1,-1]) M('electrico',[cylX_(0.1,0.42,20).translate(X0+0.05,2.55,sd*0.55),cylX_(0.07,0.12,16).translate(X0-0.2,2.55,sd*0.55),RB(0.16,0.12,0.12,0.02).translate(X0+0.05,2.7,sd*0.55)],'#2d3034',{metal:0.4,rough:0.5});
     // frente: tapa de distribución, amortiguador de vibraciones, poleas, bombas de agua y caja de termostatos
     M('motor',[T(RB(0.18,1.25,1.1,0.08),X1+0.1,3.15,0)],grisO,{metal:0.45,rough:0.5});
     M('motor',[cylX_(0.34,0.16,40).translate(X1+0.28,2.75,0)],'#2a2c2f',{metal:0.4,rough:0.6});
@@ -2183,8 +2197,8 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     M('motor',[new THREE.TorusGeometry(0.05,0.012,6,12).scale(1,8,1).translate(X1+0.33,3.15,0.12)],'#151515',{rough:0.8});
     // lado izquierdo: filtros de aceite y combustible, enfriador de aceite, ECM con arnés
     { const f=[], h=[]; for(let i=0;i<4;i++){ f.push(cylY(0.075,0.32,24).translate(X0+1.1+i*0.18,2.75,-0.64)); h.push(cylY(0.08,0.04,24).translate(X0+1.1+i*0.18,2.93,-0.64)); }
-      M('motor',f,'#e7e3d7',{rough:0.4}); M('motor',h,alu,{metal:0.6});
-      const ff=[]; for(let i=0;i<3;i++) ff.push(cylY(0.06,0.26,20).translate(X0+0.35+i*0.15,2.78,-0.62)); M('motor',ff,'#2f6fb5',{rough:0.4}); }
+      M('motor',f,'#e0a21b',{rough:0.45}); M('motor',h,alu,{metal:0.6});
+      const ff=[]; for(let i=0;i<3;i++) ff.push(cylY(0.06,0.26,20).translate(X0+0.35+i*0.15,2.78,-0.62)); M('motor',ff,'#e0a21b',{rough:0.45}); M('motor',[0,1,2].map(i=>new THREE.CylinderGeometry(0.062,0.062,0.1,20).translate(X0+0.35+i*0.15,2.8,-0.62).toNonIndexed()),'#f4f1e6',{rough:0.6}); }
     M('motor',[T(RB(1.0,0.32,0.14,0.03),X0+1.85,3.0,-0.6)],'#7d838a',{metal:0.6});
     M('motor',[T(RB(0.5,0.34,0.07,0.02),X0+0.7,3.3,0.6)],'#1d1f22',{metal:0.3,rough:0.5});
     { const fin=[]; for(let i=0;i<10;i++) fin.push(T(new THREE.BoxGeometry(0.012,0.3,0.04),X0+0.48+i*0.045,3.3,0.65)); M('motor',fin,'#2a2c2f'); }
@@ -2197,13 +2211,22 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
   for(const z of [0.75,-0.75]) addMesh('motor',box(3.6,0.22,0.22),C.yel,[3.1,2.05,z]);
   // filtros de aire del motor: al frente, bajo la plataforma, a cada lado del radiador (tapas redondas hacia adelante)
   for(const z of [2.85,-2.85]){
-    addMesh('motor',new RoundedBoxGeometry(0.9,1.0,1.7,2,0.06),'#6d7176',[5.85,4.05,z],{metal:0.4,edges:false});
-    { const cs=[]; for(const dz of [-0.4,0.4]) cs.push(T(cylX(0.36,0.18,28),6.36,4.1,z+dz).toNonIndexed(),T(cylX(0.12,0.06,16),6.47,4.1,z+dz).toNonIndexed()); M('motor',cs,'#3e4247',{metal:0.5,rough:0.5}); }
-    { const cu=[]; for(const dz of [-0.55,0,0.55]) cu.push(T(new THREE.CylinderGeometry(0.13,0.08,0.24,14),6.05,3.44,z+dz).toNonIndexed()); M('motor',cu,'#151515'); }
-    cylBetween('motor',[5.4,4.2,z*0.92],[4.8,4.45,z*0.78],0.15,'#7d8288'); cylBetween('motor',[4.8,4.45,z*0.78],[2.9,4.55,z>0?0.86:-0.86],0.15,'#7d8288'); // ductos de admisión
+    addMesh('motor',new RoundedBoxGeometry(0.9,1.0,1.7,2,0.06),C.yel,[5.85,4.05,z],{metal:0.3});
+    { const cs=[]; for(const dz of [-0.4,0.4]) cs.push(T(cylX(0.36,0.18,28),6.36,4.1,z+dz).toNonIndexed(),T(cylX(0.12,0.06,16),6.47,4.1,z+dz).toNonIndexed()); M('motor',cs,'#d9a800',{metal:0.3,rough:0.5}); }
+    { const cu=[]; for(const dz of [-0.55,0,0.55]) cu.push(T(new THREE.CylinderGeometry(0.13,0.08,0.24,14),6.05,3.44,z+dz).toNonIndexed()); M('motor',cu,'#c99600',{rough:0.5}); { const bq=[]; for(const dz of [-0.55,0,0.55]) bq.push(T(new THREE.CylinderGeometry(0.06,0.06,0.12,12),6.05,3.28,z+dz).toNonIndexed()); M('motor',bq,'#1b1c1e',{rough:0.9}); } }
+    { const P0=[5.4,4.2,z*0.92], P1=[4.8,4.45,z*0.78], P2=[2.9,4.55,z>0?0.86:-0.86], lerp=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+      cylBetween('motor',P0,P1,0.19,C.yel); cylBetween('motor',P1,P2,0.19,C.yel);                                   // ductos de admisión Ø 0,38 m
+      addMesh('motor',new THREE.SphereGeometry(0.19,18,12),C.yel,P1,{edges:false});                                   // codo
+      for(const [a,b,t0,t1] of [[P0,P1,0.05,0.4],[P1,P2,0.42,0.52],[P1,P2,0.9,0.99]]) cylBetween('motor',lerp(a,b,t0),lerp(a,b,t1),0.215,'#1b1c1e'); } // fuelles de goma
   }
-  for(const z of [0.85,-0.85]) cylBetween('motor',[2.45,5.3,z],[1.55,4.5,z*0.6],0.14,'#8a6d55');
-  addMesh('motor',cylX(0.42,1.6,24),'#7d6a58',[0.6,4.3,0],{metal:0.5});
+  { const sil=[], band=[], boca=[];
+    for(const z of [2.2,2.82]){
+      sil.push(T(cylX(0.27,1.75,28),1.22,4.68,z).toNonIndexed(), T(cylX(0.2,0.12,20),2.15,4.68,z).toNonIndexed());
+      for(const x of [0.6,1.22,1.85]) band.push(T(cylX(0.285,0.05,28),x,4.68,z).toNonIndexed());
+      cylBetween('motor',[2.2,4.68,z],[2.75,4.62,z>2.5?1.0:0.7],0.13,'#8b8f96');                         // tubo de entrada forrado
+      cylBetween('motor',[0.36,4.68,z],[0.02,4.6,z+0.3],0.2,'#b9bec4');                                   // salida en codo
+      boca.push(new THREE.SphereGeometry(0.2,16,10).translate(0.36,4.68,z).toNonIndexed()); }
+    M('motor',sil,'#c3c7cc',{metal:0.75,rough:0.35}); M('motor',band,'#8d9399',{metal:0.7}); M('motor',boca,'#b9bec4',{metal:0.7,rough:0.4}); }
   // ---------- C · Enfriamiento: radiador, shroud, ventilador, guarda tipo domo, tirantes, intercambiador
   const RXp=5.55, RY=3.3;
   for(const z of [1.85,-1.85]) addMesh('enfriamiento',box(0.5,2.8,0.18),'#4b4f54',[RXp,RY,z],{metal:0.5});
@@ -2213,21 +2236,23 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     M('enfriamiento',fins,'#8b8f93',{metal:0.6,rough:0.4}); }
   addMesh('enfriamiento',box(0.3,2.6,3.6),'#2f2f2f',[RXp-0.25,RY,0],{opacity:0.0001,edges:false});
   const ring=new THREE.TorusGeometry(1.22,0.09,10,40); ring.rotateY(Math.PI/2);
-  addMesh('enfriamiento',ring,C.black,[RXp-0.3,RY,0],{edges:false});
+  addMesh('enfriamiento',ring,C.yel,[RXp-0.3,RY,0],{edges:false});
   addMesh('enfriamiento',cylX(0.3,0.25,20),C.steel,[RXp-0.55,RY,0],{metal:0.7});
   { const bl=[]; for(let k=0;k<8;k++){ const g=new THREE.BoxGeometry(0.05,0.95,0.32); g.rotateY(0.35); g.translate(0,0.62,0); g.rotateX(k*Math.PI/4); bl.push(g.toNonIndexed()); }
     addMesh('enfriamiento',mergeGeometries(bl),'#1f1f1f',[RXp-0.55,RY,0],{edges:false}); }
-  const dome=new THREE.SphereGeometry(1.35,24,10,0,Math.PI*2,0,0.95); dome.rotateZ(Math.PI/2);
-  addMesh('enfriamiento',dome,'#9aa0a6',[RXp+0.55,RY,0],{wire:true,edges:false});
+  { const gd=[]; for(let k=1;k<=12;k++) gd.push(new THREE.TorusGeometry(0.11*k,0.009,5,k<5?24:44).rotateY(Math.PI/2).translate(RXp-0.78,RY,0).toNonIndexed());
+    for(let k=0;k<12;k++){ const a=k/12*Math.PI*2, g=new THREE.CylinderGeometry(0.011,0.011,1.3,5).translate(0,0.67,0).rotateX(a).translate(RXp-0.78,RY,0); gd.push(g.toNonIndexed()); }
+    gd.push(new THREE.TorusGeometry(1.34,0.03,6,48).rotateY(Math.PI/2).translate(RXp-0.78,RY,0).toNonIndexed());
+    M('motor',gd,'#d9a800',{metal:0.4,rough:0.5}); }                                                       // guarda plana de alambre
   for(const z of [1.6,-1.6]) cylBetween('enfriamiento',[RXp-0.2,RY+1.3,z],[4.0,2.75,z*0.75],0.05,C.steel);
   addMesh('enfriamiento',cylX(0.25,1.4,18),C.steel,[3.4,2.3,-1.75],{metal:0.6});
   // ---------- D · Estanque de combustible achaflanado con receptores de llenado
-  const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(-1.15,0),new THREE.Vector2(-1.15,2.0),new THREE.Vector2(-0.75,2.5),new THREE.Vector2(0,2.5)]);
-  const tg=new THREE.ExtrudeGeometry(sh,{depth:2.3,bevelEnabled:true,bevelThickness:0.04,bevelSize:0.04,bevelSegments:2}); tg.rotateY(-Math.PI/2); tg.center();
-  addMesh('combustible',tg,C.yel,[0.35,2.85,-2.85],{edges:false});
-  { const st=[]; for(const dy of [-0.6,0.2]) st.push(T(new THREE.BoxGeometry(2.4,0.08,0.06),0.35,2.85+dy,-4.05).toNonIndexed()); M('combustible',st,'#3d4045',{metal:0.5}); }
-  for(const dx of [-0.3,0.15,0.6]) addMesh('combustible',cylZ(0.11,0.25,14),C.chrome,[dx,1.85,-4.05],{metal:0.8});
-  addMesh('combustible',box(0.3,0.15,0.3),C.steel,[0.4,4.15,-3.0]);
+  const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(-1.75,0),new THREE.Vector2(-1.75,2.0),new THREE.Vector2(-1.35,2.5),new THREE.Vector2(0,2.5)]); // estanque de 1,75 m de fondo: su cara exterior queda a ras de zunchos, nervios y acoples
+  const tg=new THREE.ExtrudeGeometry(sh,{depth:1.85,bevelEnabled:true,bevelThickness:0.04,bevelSize:0.04,bevelSegments:2}); tg.rotateY(Math.PI/2); tg.center();   // costado derecho del equipo (+z); la cabina va al izquierdo (−z)
+  addMesh('combustible',tg,C.yel,[0.125,2.85,3.13],{edges:false});   // 1,85 m de largo: cabe entre el guardafango delantero y la rueda trasera
+  { const st=[]; for(const dy of [-0.6,0.2]) st.push(T(new THREE.BoxGeometry(1.95,0.08,0.06),0.125,2.85+dy,4.05).toNonIndexed()); M('combustible',st,'#3d4045',{metal:0.5}); }
+  for(const dx of [-0.3,0.15,0.6]) addMesh('combustible',cylZ(0.11,0.25,14),C.chrome,[dx,1.85,4.05],{metal:0.8});
+  addMesh('combustible',box(0.3,0.15,0.3),C.steel,[0.4,4.15,3.0]);
   // ---------- F · Propulsión: alternador, motores de rueda, gabinete de control, grid de retardo, sopladores
   addMesh('propulsion',cylX(1.05,1.6,40),'#6d7278',[0.75,3.2,0],{metal:0.6,rough:0.4});
   for(const z of [1.7,-1.7]) addMesh('propulsion',cylZ(1.05,0.5,36),C.steel,[RX,R,z],{metal:0.6});
@@ -2239,17 +2264,18 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
       for(let k=0;k<9;k++) lv.push(T(new THREE.BoxGeometry(0.035,0.8,0.08),xc-0.26+k*0.065,5.36,2.04).toNonIndexed()); }
     shGrid.push(M('propulsion',fr,'#3a3d42',{claro:false}),M('propulsion',lv,'#8d939a',{metal:0.6,claro:false}));
     const tp=[]; for(const x of [3.75,5.05]) tp.push(T(new THREE.BoxGeometry(0.06,0.06,2.2),x,5.93,0.9).toNonIndexed()); shGrid.push(M('propulsion',tp,C.yel)); }
-  for(const z of [2.0,2.6]) addMesh('propulsion',cylX(0.3,0.6,18),'#8d9399',[2.5,4.6,z],{metal:0.6});
   // ---------- H · Hidráulico y frenos
   for(const z of [2.3,-2.3]) addMesh('hidraulico',cylZ(0.95,0.16),C.red,[FX,R,z],{metal:0.7});
   for(const z of [1.4,-1.4]) addMesh('hidraulico',cylZ(0.7,0.2),C.red,[RX,R,z],{metal:0.7});
-  // estanque hidráulico: cilindro vertical con domo superior (≈1.300 L), al costado derecho entre ruedas
-  addMesh('hidraulico',new THREE.CylinderGeometry(0.56,0.56,1.9,40),C.yel,[0.35,2.65,2.85],{edges:false,metal:0.3});
-  addMesh('hidraulico',new THREE.SphereGeometry(0.56,40,14,0,Math.PI*2,0,Math.PI/2).scale(1,0.45,1),C.yel,[0.35,3.6,2.85],{edges:false,metal:0.3});
+  // estanque hidráulico: cilindro vertical (Ø 1,1 × 1,9 m) con fondos bombeados, colgado del bastidor, costado izquierdo (lado de la cabina, −z) entre ruedas
+  { const cu=[new THREE.CylinderGeometry(0.55,0.55,1.7,48).toNonIndexed()];
+    for(const sg of [1,-1]) cu.push(new THREE.SphereGeometry(0.55,48,10,0,Math.PI*2,0,Math.PI/2).scale(1,0.2*sg,1).translate(0,0.85*sg,0).toNonIndexed());
+    addMesh('hidraulico',mergeGeometries(cu),C.yel,[0.35,2.72,-2.85],{metal:0.3,edges:false}); }
+  addMesh('hidraulico',new THREE.BoxGeometry(1.2,0.5,0.9),C.dark,[0.35,2.3,-1.85],{metal:0.5});   // ménsula de fijación al larguero
   addMesh('hidraulico',cylX(0.3,0.9),C.grey,[1.9,2.5,0.9],{metal:0.6});
-  const shFre=[addMesh('hidraulico',box(0.9,1.0,0.9),'#a9a49a',[1.6,3.9,2.5])];
+  const shFre=[addMesh('hidraulico',box(0.9,1.0,0.9),C.yel,[1.6,3.9,2.5]),addMesh('hidraulico',box(0.5,0.26,0.012),'#f4f1e6',[1.6,4.08,2.957],{edges:false}),addMesh('hidraulico',box(0.16,0.16,0.012),'#f2c200',[1.42,3.78,2.957],{edges:false}),addMesh('hidraulico',box(0.16,0.16,0.012),'#f2c200',[1.78,3.78,2.957],{edges:false})];
   // ---------- Q · Suspensión delantera y dirección
-  for(const z of [2.15,-2.15]){ addMesh('suspdel',cylY(0.36,1.1),'#3d4045',[FX,3.9,z],{metal:0.6}); addMesh('suspdel',cylY(0.26,1.4),C.chrome,[FX,2.9,z],{metal:0.9,rough:0.2}); }
+  for(const z of [2.15,-2.15]){ addMesh('suspdel',cylY(0.36,1.1),C.yel,[FX,3.9,z],{metal:0.3}); addMesh('suspdel',cylY(0.4,0.14),C.yel,[FX,3.38,z],{metal:0.3}); { const fu=[]; for(let k=0;k<5;k++) fu.push(new THREE.TorusGeometry(0.3,0.045,6,24).rotateX(Math.PI/2).translate(FX,3.26-k*0.075,z).toNonIndexed()); fu.push(new THREE.CylinderGeometry(0.3,0.3,0.4,24).translate(FX,3.11,z).toNonIndexed()); M('suspdel',fu,'#1b1c1e',{rough:0.9}); } addMesh('suspdel',cylY(0.26,1.4),C.chrome,[FX,2.9,z],{metal:0.9,rough:0.2}); }
   for(const z of [1.7,-1.7]) cylBetween('suspdel',[3.2,2.0,z*0.55],[3.95,2.0,z],0.14,C.chrome);
   addMesh('suspdel',cylZ(0.13,4.6,12),C.steel,[3.7,1.65,0],{metal:0.7});
   // ---------- R · Suspensión trasera y carcasa de eje
@@ -2277,10 +2303,10 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     for(const dz of [-0.13,0.13]) ex.push(new THREE.BoxGeometry(0.36,0.5,0.05).translate(RX+0.2,3.0,-0.72+dz));
     shAxle.push(M('susptras',ex.map(g=>g.index?g.toNonIndexed():g),C.yel,{metal:0.35}), M('susptras',pb.map(g=>g.toNonIndexed()),'#6b7078',{metal:0.8}));
     { const vd=[]; for(const [x,y,z,w,d] of [[RX-0.2,2.755,0.36,0.44,0.3],[RX-0.2,2.755,-0.36,0.44,0.3],[RX+1.05,2.615,0,0.36,0.44]]) vd.push(new THREE.BoxGeometry(w,0.02,d).translate(x,y,z)); shAxle.push(M('susptras',vd,'#3a3d42',{claro:false})); } }
-  for(const z of [0.78,-0.78]){ addMesh('susptras',cylY(0.36,0.9),'#3d4045',[-1.0,3.75,z],{metal:0.6}); addMesh('susptras',cylY(0.26,1.2),C.chrome,[-1.0,2.95,z],{metal:0.9,rough:0.2}); }
+  for(const z of [0.78,-0.78]){ addMesh('susptras',cylY(0.36,0.9),C.yel,[-1.0,3.75,z],{metal:0.3}); addMesh('susptras',new THREE.CylinderGeometry(0.33,0.4,0.42,24),'#1b1c1e',[-1.0,3.1,z],{edges:false}); addMesh('susptras',cylY(0.26,1.2),C.chrome,[-1.0,2.95,z],{metal:0.9,rough:0.2}); }
   // ---------- T · Tolva de piso curvo (sección en "U"): casco continuo, aros exteriores, barras laterales, frontal nervado y canopy
-  { const ST=[[2.45,4.8,7.15,4.16],[1.2,4.8,7.0,4.16],[0,4.8,6.82,4.16],[-1.6,4.8,6.6,4.16],[-3.2,4.8,6.5,4.16],[-5.0,4.8,6.42,4.14],
-              [-6.2,4.95,6.36,4.12],[-7.1,5.12,6.32,4.08],[-7.6,5.3,6.3,4.04],[-7.9,5.62,6.3,3.98]]; // altura de carga ≈ 6,65 m, ancho ≈ 9 m // [x, fondo, borde, semiancho]
+  { const ST=[[2.45,4.8,7.15,4.38],[1.2,4.8,7.0,4.38],[0,4.8,6.82,4.38],[-1.6,4.8,6.6,4.38],[-3.2,4.8,6.5,4.38],[-5.0,4.8,6.42,4.36],
+              [-6.2,4.95,6.36,4.34],[-7.1,5.12,6.32,4.3],[-7.6,5.3,6.3,4.26],[-7.9,5.62,6.3,4.2]]; // altura de carga ≈ 6,65 m, ancho total ≈ 9,15 m // [x, fondo, borde, semiancho]
     const NA=44, prof=(yb,yt,W,a,off=0)=>{ const sa=Math.sin(a), ca=Math.cos(a); const z=Math.sign(sa)*Math.pow(Math.abs(sa),0.8)*(W+off); const y=yt-(yt-yb)*Math.pow(ca,0.55)-off*Math.pow(ca,0.55); return [z,y]; };
     const surf=(aMax,yOff,col,o)=>{ const pos=[], idx=[];
       ST.forEach(([x,yb,yt,W])=>{ for(let k=0;k<=NA;k++){ const a=-aMax+2*aMax*k/NA; const [z,y]=prof(yb,yt,W,a); pos.push(x,y+yOff,z); } });
@@ -2304,39 +2330,51 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
       const fr=[]; for(const z of [-2.6,-1.3,0,1.3,2.6]){ const ya=prof(yb,yt,W,Math.asin(Math.min(1,Math.pow(Math.abs(z)/W,1/0.8)))*Math.sign(z))[1]; fr.push(T(new THREE.BoxGeometry(0.22,yt-ya,0.16),x0+0.12,(yt+ya)/2,z).toNonIndexed()); }
       fr.push(T(new THREE.BoxGeometry(0.2,0.2,2*W),x0+0.12,yt-0.9,0).toNonIndexed()); M('tolva',fr,'#d9a300',{rough:0.5}); }
     // canopy: plancha con bordes levantados, desde el frontal hasta sobre la cabina
-    { const NX=14,NZ=40,pos=[],idx=[]; for(let i=0;i<=NX;i++){ const x=2.45+4.45*i/NX; for(let k=0;k<=NZ;k++){ const z=-4.1+8.2*k/NZ; const y=7.18+(x-2.45)*0.05+0.32*Math.pow(Math.abs(z)/4.1,5); pos.push(x,y,z); } }
+    { const NX=14,NZ=40,pos=[],idx=[]; for(let i=0;i<=NX;i++){ const x=2.45+4.45*i/NX; for(let k=0;k<=NZ;k++){ const z=-4.32+8.64*k/NZ; const y=7.18+(x-2.45)*0.05+0.32*Math.pow(Math.abs(z)/4.32,5); pos.push(x,y,z); } }
       for(let i=0;i<NX;i++) for(let k=0;k<NZ;k++){ const A=i*(NZ+1)+k,B=A+NZ+1; idx.push(A,B,A+1,A+1,B,B+1); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals(); const m=addMesh('tolva',g,C.yel,[0,0,0],{edges:false,rough:0.5}); m.material.side=THREE.DoubleSide;
-      const cb=[]; for(let k=0;k<5;k++) cb.push(T(new THREE.BoxGeometry(0.14,0.2,8.0),3.0+k*0.85,7.08+(3.0+k*0.85-2.45)*0.05,0).toNonIndexed());
-      cb.push(T(new THREE.BoxGeometry(4.45,0.12,0.12),4.67,7.5,4.05).toNonIndexed(),T(new THREE.BoxGeometry(4.45,0.12,0.12),4.67,7.5,-4.05).toNonIndexed()); M('tolva',cb,'#c99600',{rough:0.5});
-      const red=[]; for(const z of [4.12,-4.12]) for(const x of [0.6,1.6]) red.push(T(new THREE.BoxGeometry(0.85,0.32,0.1),x,7.0,z).toNonIndexed()); M('tolva',red,'#c8281e',{rough:0.6}); }
+      const cb=[]; for(let k=0;k<5;k++) cb.push(T(new THREE.BoxGeometry(0.14,0.2,8.44),3.0+k*0.85,7.08+(3.0+k*0.85-2.45)*0.05,0).toNonIndexed());
+      cb.push(T(new THREE.BoxGeometry(4.45,0.12,0.12),4.67,7.5,4.27).toNonIndexed(),T(new THREE.BoxGeometry(4.45,0.12,0.12),4.67,7.5,-4.27).toNonIndexed()); M('tolva',cb,'#c99600',{rough:0.5});
+      const red=[]; for(const z of [4.34,-4.34]) for(const x of [0.6,1.6]) red.push(T(new THREE.BoxGeometry(0.85,0.32,0.1),x,7.0,z).toNonIndexed()); M('tolva',red,'#c8281e',{rough:0.6}); }
     // accesorios: bota-piedras entre las duales, guardafangos, porta focos traseros, protector de cabina y seguro de levante
     { const bp=[], gf=[], pf=[], pc=[];
       for(const z of [2.69,-2.69]){ bp.push(T(cylY(0.045,2.3),RX,4.05,z).toNonIndexed(),T(new THREE.BoxGeometry(0.5,0.3,0.22),RX,5.25,z).toNonIndexed());
-        gf.push(T(new THREE.BoxGeometry(1.5,1.25,0.05),-0.15,4.55,z>0?3.98:-3.98).toNonIndexed());
+        gf.push(T(new THREE.BoxGeometry(1.5,1.25,0.05),-0.15,4.45,z>0?4.12:-4.12).toNonIndexed());
         pf.push(T(new THREE.BoxGeometry(0.3,0.42,0.3),-7.7,5.95,z*0.95).toNonIndexed()); }
-      for(let k=0;k<5;k++) pc.push(T(new THREE.BoxGeometry(0.85,0.08,0.5),3.05+k*0.88,7.3+(3.05+k*0.88-2.45)*0.05,-4.3).toNonIndexed());
-      M('tolva',bp,'#c99600',{metal:0.4,rough:0.5}); M('tolva',gf,'#2b2e31',{rough:0.85}); M('tolva',pf,'#d9a300',{rough:0.5}); M('tolva',pc,'#3a3d42',{rough:0.7});
+      for(let k=0;k<5;k++) pc.push(T(new THREE.BoxGeometry(0.85,0.08,0.5),3.05+k*0.88,7.3+(3.05+k*0.88-2.45)*0.05,-4.5).toNonIndexed());
+      M('tolva',bp,'#c99600',{metal:0.4,rough:0.5}); M('tolva',gf,'#1d1f22',{rough:0.95}); M('tolva',[4.12,-4.12].map(z=>T(new THREE.BoxGeometry(1.5,0.1,0.07),-0.15,5.03,z).toNonIndexed()),'#d9a300',{rough:0.5}); M('tolva',pf,'#d9a300',{rough:0.5}); M('tolva',pc,'#3a3d42',{rough:0.7});
       const lamps=[]; for(const z of [3.23,-3.23]) lamps.push(T(new THREE.BoxGeometry(0.06,0.2,0.24),-7.86,6.0,z).toNonIndexed()); M('tolva',lamps,'#ffe9a8',{rough:0.3});
       addMesh('tolva',cylZ(0.06,0.5,12),'#c0261d',[-1.5,4.75,2.0],{metal:0.4}); }
   }
-  for(const z of [1.1,-1.1]) addMesh('tolva',cylZ(0.3,0.7,16),C.steel,[-7.0,3.95,z],{metal:0.7});
+  { // largueros de la tolva (vigas cajón bajo el piso), almohadillas de apoyo sobre el bastidor y orejas de pivote con pasador en (-4,8 ; 3,05)
+    const lg=[], pad=[], ore=[];
+    for(const z of [0.95,-0.95]){
+      lg.push(T(new THREE.BoxGeometry(7.4,0.46,0.34),-1.8,4.58,z).toNonIndexed());                     // larguero x = -5,5 … 1,9
+      for(const x of [1.75]) pad.push(T(new THREE.BoxGeometry(0.5,0.07,0.38),x,4.315,z).toNonIndexed()); // almohadillas de goma
+      for(const dz of [-0.17,0.17]){ const sh=new THREE.Shape(); sh.moveTo(-5.55,4.36); sh.lineTo(-4.0,4.36); sh.lineTo(-4.58,2.9); sh.absarc(-4.8,3.05,0.27,-0.6,Math.PI+0.6,true); sh.lineTo(-5.55,4.36);
+        const g=new THREE.ExtrudeGeometry(sh,{depth:0.07,bevelEnabled:false}).translate(0,0,z+dz-0.035); ore.push(g.toNonIndexed()); }
+      addMesh('tolva',cylZ(0.13,0.62,16),C.chrome,[-4.8,3.05,z],{metal:0.9,rough:0.25});               // pasador de pivote
+      addMesh('tolva',cylZ(0.2,0.05,16),C.steel,[-4.8,3.05,z+(z>0?0.33:-0.33)],{metal:0.7});            // retén del pasador
+    }
+    for(const x of [-4.6,-2.4,-0.2,1.7]) lg.push(T(new THREE.BoxGeometry(0.22,0.3,1.7),x,4.6,0).toNonIndexed());   // travesaños entre largueros
+    M('tolva',lg,'#c99600',{rough:0.55}); M('tolva',pad,'#22252a',{rough:0.9}); M('tolva',ore,'#c99600',{rough:0.55}); }
   // ---------- K · Cabina: cuerpo redondeado, vidrios polarizados, techo y espejo
-  addMesh('cabina',new RoundedBoxGeometry(2.1,2.2,2.0,4,0.12),C.yel,[4.4,5.95,-3.0],{edges:false,rough:0.45}).userData.shell=1;
-  addMesh('cabina',new RoundedBoxGeometry(2.14,0.95,2.04,3,0.08),'#22313a',[4.4,6.35,-3.0],{opacity:0.88,metal:0.6,rough:0.08,edges:false}).userData.shell=2;
-  addMesh('cabina',new RoundedBoxGeometry(2.3,0.12,2.2,2,0.05),'#3d4045',[4.4,7.1,-3.0],{edges:false}).userData.shell=1;
+  addMesh('cabina',new RoundedBoxGeometry(2.1,2.2,2.0,4,0.12),C.yel,[4.4,5.95,-3.0],{edges:false,rough:0.45,sub:/CAB MOUNTING HARDWARE/}).userData.shell=1;
+  addMesh('cabina',new RoundedBoxGeometry(2.14,0.95,2.04,3,0.08),'#22313a',[4.4,6.35,-3.0],{opacity:0.88,metal:0.6,rough:0.08,edges:false,sub:/CAB WINDOWS/}).userData.shell=2;
+  addMesh('cabina',new RoundedBoxGeometry(2.3,0.12,2.2,2,0.05),'#3d4045',[4.4,7.1,-3.0],{edges:false,sub:/CAB EXTERNAL COVERS 1/}).userData.shell=1;
   // puerta del operador en el costado izquierdo: hoja con ventana, manilla, bisagras y marco; gira sobre el borde delantero (x = 5,3)
-  { const HX=5.3, Z=-4.02, Y0=4.9, Y1=6.78, W=0.82; const grp=[];
+  { SUBT=/DOOR ASSEMBLY - LH/; const HX=5.3, Z=-4.02, Y0=4.9, Y1=6.78, W=0.82; const grp=[];
     const hoja=addMesh('cabina',new RoundedBoxGeometry(W,Y1-Y0,0.07,2,0.02).translate(-W/2,(Y0+Y1)/2-6.0,0),C.yel,[HX,6.0,Z],{edges:false,rough:0.45}); grp.push(hoja);
     const vid=addMesh('cabina',new RoundedBoxGeometry(W-0.16,0.78,0.075,2,0.02).translate(-W/2,6.3-6.0,0),'#22313a',[HX,6.0,Z],{opacity:0.88,metal:0.6,rough:0.08,edges:false}); grp.push(vid);
     const man=addMesh('cabina',mergeGeometries([new THREE.BoxGeometry(0.16,0.035,0.04).translate(-W+0.18,5.85-6.0,-0.05),new THREE.CylinderGeometry(0.035,0.035,0.03,12).rotateX(Math.PI/2).translate(-W+0.3,5.85-6.0,-0.055)]),'#1d1f22',[HX,6.0,Z],{edges:false,metal:0.6,claro:false}); grp.push(man);
     const bis=addMesh('cabina',mergeGeometries([5.2,6.5].map(y=>new THREE.CylinderGeometry(0.025,0.025,0.14,10).translate(0.02,y-6.0,-0.045))),'#5d6166',[HX,6.0,Z],{edges:false,metal:0.7}); grp.push(bis);
-    grp.forEach(m=>{ m.userData.shell=1; m.userData.puerta=true; m.userData.q0=m.quaternion.clone(); });
+    grp.forEach(m=>{ m.userData.shell=1; m.userData.puerta=true; m.userData.q0=m.quaternion.clone(); }); SUBT=/CAB DOOR INSTALLATION/;
     M('cabina',[new THREE.BoxGeometry(0.05,Y1-Y0+0.1,0.05).translate(HX+0.03,(Y0+Y1)/2,Z),new THREE.BoxGeometry(0.05,Y1-Y0+0.1,0.05).translate(HX-W-0.03,(Y0+Y1)/2,Z),new THREE.BoxGeometry(W+0.1,0.05,0.05).translate(HX-W/2,Y1+0.05,Z)],'#3d4045',{metal:0.5}).userData.shell=1;
-    // peldaño y pasamanos de acceso a la puerta, sobre la franja izquierda de la cubierta
+    SUBT=null; // peldaño y pasamanos de acceso a la puerta, sobre la franja izquierda de la cubierta
     M('plataformas',[new THREE.BoxGeometry(0.9,0.04,0.28).translate(HX-W/2,4.78,-4.16)],'#5d6166',{metal:0.6}); M('plataformas',[new THREE.CylinderGeometry(0.035,0.035,1.2,10).translate(HX+0.12,5.5,-4.2)],'#ffb300',{claro:false}); }
   // interior de la cabina (puesto del operador mirando hacia +X) · detallado para la vista "sentado en la cabina"
-  { const fab='#2b2e31', dash='#3a3d42', trim='#4a4e53', neg='#151618', alu='#9aa1a8';
+  { const fab='#232528', dash='#3a3d42', trim='#4a4e53', neg='#151618', alu='#9aa1a8';
+    const OSC=new Set(['#232528','#151618','#1a1b1d','#3b3f44','#3a3d42']), MC=(sy,g,c,o={})=>M(sy,g,c,OSC.has(c)?{claro:false,...o}:o);
     const RB=(w,h,d,r=0.03)=>new RoundedBoxGeometry(w,h,d,2,r);
     const NI=g=>g.index?g.toNonIndexed():g;
     const EYE=new THREE.Vector3(3.93,6.18,-3.15);
@@ -2362,68 +2400,68 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     const radio=cv(384,96,(x,w,h)=>{ x.fillStyle='#16181b'; x.fillRect(0,0,w,h); x.fillStyle='#0a2414'; x.fillRect(110,18,170,42); x.fillStyle='#7dff9c'; x.font='bold 26px monospace'; x.fillText('CANAL 3',124,50); x.fillStyle='#3a3f45'; for(const cx of [50,330]){ x.beginPath(); x.arc(cx,44,26,0,7); x.fill(); } x.fillStyle='#aab1b8'; x.font='12px sans-serif'; x.fillText('VOL',38,88); x.fillText('CANAL',314,88); x.fillText('RADIO TRONCAL',150,84); });
     const hvac=cv(384,96,(x,w,h)=>{ x.fillStyle='#16181b'; x.fillRect(0,0,w,h); const K=[['TEMP',60,'#c8281e'],['VENTILADOR',192,'#aab1b8'],['A/C',324,'#2b8be0']]; K.forEach(([t,cx,c])=>{ x.beginPath(); x.arc(cx,40,26,0,7); x.fillStyle='#2d3136'; x.fill(); x.strokeStyle=c; x.lineWidth=4; x.beginPath(); x.arc(cx,40,32,Math.PI*0.8,Math.PI*2.2); x.stroke(); x.fillStyle='#d6dbe0'; x.font='bold 12px sans-serif'; x.textAlign='center'; x.fillText(t,cx,88); }); });
     const consola=cv(256,160,(x,w,h)=>{ x.fillStyle='#24272b'; x.fillRect(0,0,w,h); x.fillStyle='#d6dbe0'; x.font='bold 15px sans-serif'; x.fillText('LEVANTE',18,22); x.fillText('MARCHA',150,22); x.font='13px sans-serif'; x.fillStyle='#aab1b8'; ['SUBIR','MANTENER','FLOTAR','BAJAR'].forEach((t,i)=>x.fillText(t,18,50+i*26)); ['F  Avance','N  Neutro','R  Retroceso','P  Estacionar'].forEach((t,i)=>x.fillText(t,150,50+i*26)); });
-    // piso y pisadera
-    { const r=[RB(1.9,0.03,1.8,0.01).translate(4.4,4.955,-3.0)]; for(let k=0;k<16;k++) r.push(new THREE.BoxGeometry(0.02,0.012,1.6).translate(3.7+k*0.08,4.975,-3.0)); M('cabina',r.map(NI),'#1c1d1f',{rough:0.95}); }
-    // asiento del operador con suspensión, apoyabrazos, apoyacabezas y cinturón
+    SUBT=/CAB FLOORMATS/; // piso y pisadera
+    { const r=[RB(1.9,0.03,1.8,0.01).translate(4.4,4.955,-3.0)]; for(let k=0;k<16;k++) r.push(new THREE.BoxGeometry(0.02,0.012,1.6).translate(3.7+k*0.08,4.975,-3.0)); MC('cabina',r.map(NI),'#1c1d1f',{rough:0.95}); }
+    SUBT=/OPERATOR SEAT - PREMIUM/; // asiento del operador con suspensión, apoyabrazos, apoyacabezas y cinturón
     { const s=[T(cylY(0.13,0.12,20),4.0,5.0,-3.15),T(cylY(0.1,0.12,18),4.0,5.12,-3.15),T(RB(0.5,0.06,0.5,0.02),4.0,5.2,-3.15),
         T(RB(0.56,0.14,0.56,0.06),4.03,5.36,-3.15),T(RB(0.14,0.8,0.56,0.06),3.75,5.83,-3.15,0,0,0.13),T(RB(0.12,0.22,0.36,0.05),3.69,6.36,-3.15,0,0,0.13),
         T(RB(0.38,0.07,0.09,0.03),4.02,5.66,-2.84),T(RB(0.38,0.07,0.09,0.03),4.02,5.66,-3.46),T(cylY(0.02,0.24,8),3.86,5.54,-2.84),T(cylY(0.02,0.24,8),3.86,5.54,-3.46)];
-      M('cabina',s.map(NI),fab,{rough:0.92});
-      M('cabina',[T(RB(0.4,0.02,0.4,0.01),4.05,5.435,-3.15),T(RB(0.02,0.58,0.4,0.01),3.83,5.86,-3.15,0,0,0.13)],'#3b3f44',{rough:0.95});
-      M('cabina',[new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(3.76,6.12,-3.4),new THREE.Vector3(3.86,5.9,-3.3),new THREE.Vector3(3.98,5.6,-3.08),new THREE.Vector3(4.08,5.48,-2.92)]),24,0.012,4,false)],'#e06a14',{rough:0.7});
-      M('cabina',[T(RB(0.06,0.03,0.04,0.008),4.08,5.47,-2.9),T(cylY(0.018,0.12,8),4.05,5.42,-3.42)],alu,{metal:0.8,rough:0.3}); }
-    // columna de dirección, volante (3 rayos), palanca de retardo y de luces de giro
+      MC('cabina',s.map(NI),fab,{rough:0.92});
+      MC('cabina',[T(RB(0.4,0.02,0.4,0.01),4.05,5.435,-3.15),T(RB(0.02,0.58,0.4,0.01),3.83,5.86,-3.15,0,0,0.13)],'#3b3f44',{rough:0.95});
+      MC('cabina',[new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(3.76,6.12,-3.4),new THREE.Vector3(3.86,5.9,-3.3),new THREE.Vector3(3.98,5.6,-3.08),new THREE.Vector3(4.08,5.48,-2.92)]),24,0.012,4,false)],'#e06a14',{rough:0.7});
+      MC('cabina',[T(RB(0.06,0.03,0.04,0.008),4.08,5.47,-2.9),T(cylY(0.018,0.12,8),4.05,5.42,-3.42)],alu,{metal:0.8,rough:0.3}); }
+    SUBT=/STEERING COLUMN ASSEMBLY/; // columna de dirección, volante (3 rayos), palanca de retardo y de luces de giro
     { const n=new THREE.Vector3(-0.82,0.57,0).normalize(), c=new THREE.Vector3(4.55,5.9,-3.15), q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),n);
       const w=[new THREE.TorusGeometry(0.205,0.02,12,44)]; for(const a of [Math.PI/2,Math.PI*7/6,-Math.PI/6]) w.push(new THREE.BoxGeometry(0.17,0.03,0.018).translate(0.095,0,0).rotateZ(a));
-      w.push(new THREE.CylinderGeometry(0.065,0.07,0.05,24).rotateX(Math.PI/2)); w.forEach(g=>{ g.applyQuaternion(q); g.translate(c.x,c.y,c.z); }); M('cabina',w.map(NI),'#1a1b1d',{rough:0.7});
-      const hp=new THREE.CylinderGeometry(0.045,0.045,0.012,24).rotateX(Math.PI/2); hp.applyQuaternion(q); hp.translate(c.x+n.x*0.03,c.y+n.y*0.03,c.z); M('cabina',[NI(hp)],'#3a3d42',{rough:0.5});
+      w.push(new THREE.CylinderGeometry(0.065,0.07,0.05,24).rotateX(Math.PI/2)); w.forEach(g=>{ g.applyQuaternion(q); g.translate(c.x,c.y,c.z); }); MC('cabina',w.map(NI),'#1a1b1d',{rough:0.7});
+      const hp=new THREE.CylinderGeometry(0.045,0.045,0.012,24).rotateX(Math.PI/2); hp.applyQuaternion(q); hp.translate(c.x+n.x*0.03,c.y+n.y*0.03,c.z); MC('cabina',[NI(hp)],'#3a3d42',{rough:0.5});
       cylBetween('cabina',[c.x-n.x*0.04,c.y-n.y*0.04,c.z],[5.1,5.5,-3.15],0.045,'#26282b');
-      M('cabina',[RB(0.16,0.12,0.14,0.03).translate(4.7,5.78,-3.15)],'#26282b',{rough:0.6});
-      cylBetween('cabina',[4.7,5.8,-3.08],[4.66,5.83,-2.88],0.009,'#2a2c2f'); M('cabina',[new THREE.SphereGeometry(0.022,12,8).translate(4.66,5.83,-2.87)],'#d8a400',{rough:0.4});
+      MC('cabina',[RB(0.16,0.12,0.14,0.03).translate(4.7,5.78,-3.15)],'#26282b',{rough:0.6});
+      cylBetween('cabina',[4.7,5.8,-3.08],[4.66,5.83,-2.88],0.009,'#2a2c2f'); MC('cabina',[new THREE.SphereGeometry(0.022,12,8).translate(4.66,5.83,-2.87)],'#d8a400',{rough:0.4});
       cylBetween('cabina',[4.7,5.8,-3.22],[4.68,5.79,-3.38],0.008,'#2a2c2f'); }
-    // tablero: cuerpo, capota de instrumentos, desempañador, rejillas de aire
-    { M('cabina',[T(RB(0.4,0.66,1.88,0.05),5.24,5.29,-3.0),T(RB(0.42,0.07,1.88,0.03),5.12,5.64,-3.0,0,0,-0.28),T(RB(0.2,0.08,1.86,0.02),5.32,5.9,-3.0)].map(NI),dash,{rough:0.75});
-      M('cabina',[T(RB(0.24,0.36,0.66,0.05),5.15,5.8,-3.15),T(RB(0.2,0.04,0.7,0.02),5.08,6.0,-3.15,0,0,-0.3)].map(NI),'#26282b',{rough:0.8});
+    SUBT=/^INSTRUMENT PANEL/; // tablero: cuerpo, capota de instrumentos, desempañador, rejillas de aire
+    { MC('cabina',[T(RB(0.4,0.66,1.88,0.05),5.24,5.29,-3.0),T(RB(0.42,0.07,1.88,0.03),5.12,5.64,-3.0,0,0,-0.28),T(RB(0.2,0.08,1.86,0.02),5.32,5.9,-3.0)].map(NI),dash,{rough:0.75});
+      MC('cabina',[T(RB(0.24,0.36,0.66,0.05),5.15,5.8,-3.15),T(RB(0.2,0.04,0.7,0.02),5.08,6.0,-3.15,0,0,-0.3)].map(NI),'#26282b',{rough:0.8});
       const ven=[]; for(const z of [-3.75,-2.45,-2.9]) { ven.push(RB(0.05,0.1,0.18,0.01).translate(5.04,5.66,z)); for(let k=0;k<4;k++) ven.push(new THREE.BoxGeometry(0.012,0.008,0.17).translate(5.015,5.625+k*0.024,z)); }
-      for(let k=0;k<20;k++) ven.push(new THREE.BoxGeometry(0.12,0.006,0.012).translate(5.32,5.945,-3.85+k*0.09)); M('cabina',ven.map(NI),neg,{rough:0.6});
-      // panel de la pantalla y de interruptores, a la derecha del volante
-      M('cabina',[T(RB(0.06,0.2,0.3,0.02),5.0,5.78,-2.63,0,0,-0.2),T(RB(0.08,0.17,0.32,0.02),5.0,5.6,-2.35,0,0,-0.35)].map(NI),'#202225',{rough:0.6}); }
-    // pedales: freno de servicio / retardo (izq.) y acelerador (der.), reposapiés
+      for(let k=0;k<20;k++) ven.push(new THREE.BoxGeometry(0.12,0.006,0.012).translate(5.32,5.945,-3.85+k*0.09)); MC('cabina',ven.map(NI),neg,{rough:0.6});
+      SUBT=/LOWER RH DASH SWITCHES/; // panel de la pantalla y de interruptores, a la derecha del volante
+      MC('cabina',[T(RB(0.06,0.2,0.3,0.02),5.0,5.78,-2.63,0,0,-0.2),T(RB(0.08,0.17,0.32,0.02),5.0,5.6,-2.35,0,0,-0.35)].map(NI),'#202225',{rough:0.6}); }
+    SUBT=/ACCELERATOR PEDAL/; // pedales: freno de servicio / retardo (izq.) y acelerador (der.), reposapiés
     { const p=[T(RB(0.24,0.03,0.14,0.01),5.03,5.1,-3.33,0,0,0.75),T(RB(0.26,0.03,0.1,0.01),5.03,5.1,-2.98,0,0,0.85),T(cylZ(0.015,0.5,8),5.12,5.0,-3.15),T(RB(0.16,0.04,0.3,0.01),4.98,4.99,-3.62,0,0,0.3)];
-      M('cabina',p.map(NI),'#18191b',{metal:0.5,rough:0.5}); const g=[]; for(let k=0;k<5;k++){ g.push(new THREE.BoxGeometry(0.008,0.006,0.13).translate(0,0.018,0).translate(-0.09+k*0.045,0,0).rotateZ(0.75).translate(5.03,5.1,-3.33)); } M('cabina',g.map(NI),alu,{metal:0.8}); }
-    // consola derecha: palanca de levante, selector F/N/R, freno de estacionamiento
-    { M('cabina',[T(RB(0.72,0.46,0.22,0.04),4.17,5.2,-2.73),T(RB(0.7,0.04,0.24,0.02),4.17,5.44,-2.73)].map(NI),dash,{rough:0.75});
-      M('cabina',[cylY(0.035,0.04,14).translate(4.08,5.48,-2.73),cylY(0.03,0.04,14).translate(4.32,5.48,-2.73)].map(NI),'#111214',{rough:0.95});
-      cylBetween('cabina',[4.08,5.48,-2.73],[4.1,5.66,-2.73],0.011,alu); M('cabina',[new THREE.SphereGeometry(0.034,16,12).scale(1,1.25,1).translate(4.1,5.69,-2.73)],'#141516',{rough:0.5});
-      cylBetween('cabina',[4.32,5.48,-2.73],[4.34,5.62,-2.73],0.01,alu); M('cabina',[RB(0.05,0.08,0.05,0.015).translate(4.34,5.65,-2.73)],'#141516',{rough:0.5}); M('cabina',[RB(0.02,0.02,0.03,0.005).translate(4.31,5.66,-2.73)],'#c8281e',{});
-      M('cabina',[cylY(0.022,0.05,6).translate(4.47,5.48,-2.73),cylY(0.03,0.025,6).translate(4.47,5.515,-2.73)].map(NI),'#d8a400',{rough:0.4}); }
-    // consola izquierda (puerta): alzavidrios y bolsillo
-    M('cabina',[T(RB(0.6,0.3,0.12,0.03),4.3,5.5,-3.88),T(RB(0.3,0.16,0.05,0.02),4.25,5.2,-3.9)].map(NI),trim,{rough:0.85});
-    M('cabina',[T(RB(0.05,0.02,0.03,0.006),4.45,5.66,-3.85),T(RB(0.05,0.02,0.03,0.006),4.53,5.66,-3.85)].map(NI),neg,{});
-    // asiento del instructor (abatible) con cinturón
-    { M('cabina',[T(RB(0.4,0.1,0.42,0.04),4.68,5.3,-2.3),T(RB(0.1,0.5,0.42,0.04),4.46,5.6,-2.3,0,0,0.08),T(RB(0.32,0.34,0.3,0.03),4.68,5.08,-2.3)].map(NI),'#34383c',{rough:0.9});
-      M('cabina',[new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(4.47,5.82,-2.12),new THREE.Vector3(4.6,5.55,-2.25),new THREE.Vector3(4.72,5.37,-2.42)]),16,0.01,4,false)],'#e06a14',{rough:0.7}); }
-    // consola superior: radio, climatización, luz de techo, parasol, parlantes
-    { M('cabina',[T(RB(0.5,0.16,1.2,0.04),5.08,6.92,-3.0),T(RB(0.9,0.04,1.6,0.02),4.6,7.0,-3.0)].map(NI),'#2f3236',{rough:0.85});
-      M('cabina',[cylY(0.07,0.02,24).translate(4.2,6.975,-3.0)],'#d9d2c0',{rough:0.3});
-      const pk=[]; for(const z of [-3.8,-2.2]){ pk.push(cylX(0.07,0.03,20).translate(3.43,6.85,z)); } M('cabina',pk.map(NI),'#141516',{rough:0.9});
+      MC('cabina',p.map(NI),'#18191b',{metal:0.5,rough:0.5}); const g=[]; for(let k=0;k<5;k++){ g.push(new THREE.BoxGeometry(0.008,0.006,0.13).translate(0,0.018,0).translate(-0.09+k*0.045,0,0).rotateZ(0.75).translate(5.03,5.1,-3.33)); } MC('cabina',g.map(NI),alu,{metal:0.8}); }
+    SUBT=/CENTER CONSOLE MODULE - STRUCTURAL|HOIST LEVER|SHIFT LEVER/; // consola derecha: palanca de levante, selector F/N/R, freno de estacionamiento
+    { MC('cabina',[T(RB(0.72,0.46,0.22,0.04),4.17,5.2,-2.73),T(RB(0.7,0.04,0.24,0.02),4.17,5.44,-2.73)].map(NI),dash,{rough:0.75});
+      MC('cabina',[cylY(0.035,0.04,14).translate(4.08,5.48,-2.73),cylY(0.03,0.04,14).translate(4.32,5.48,-2.73)].map(NI),'#111214',{rough:0.95});
+      cylBetween('cabina',[4.08,5.48,-2.73],[4.1,5.66,-2.73],0.011,alu); MC('cabina',[new THREE.SphereGeometry(0.034,16,12).scale(1,1.25,1).translate(4.1,5.69,-2.73)],'#141516',{rough:0.5});
+      cylBetween('cabina',[4.32,5.48,-2.73],[4.34,5.62,-2.73],0.01,alu); MC('cabina',[RB(0.05,0.08,0.05,0.015).translate(4.34,5.65,-2.73)],'#141516',{rough:0.5}); MC('cabina',[RB(0.02,0.02,0.03,0.005).translate(4.31,5.66,-2.73)],'#c8281e',{});
+      MC('cabina',[cylY(0.022,0.05,6).translate(4.47,5.48,-2.73),cylY(0.03,0.025,6).translate(4.47,5.515,-2.73)].map(NI),'#d8a400',{rough:0.4}); }
+    SUBT=/CAB INTERIOR TRIM/; // consola izquierda (puerta): alzavidrios y bolsillo
+    MC('cabina',[T(RB(0.6,0.3,0.12,0.03),4.3,5.5,-3.88),T(RB(0.3,0.16,0.05,0.02),4.25,5.2,-3.9)].map(NI),trim,{rough:0.85});
+    MC('cabina',[T(RB(0.05,0.02,0.03,0.006),4.45,5.66,-3.85),T(RB(0.05,0.02,0.03,0.006),4.53,5.66,-3.85)].map(NI),neg,{});
+    SUBT=/PASSENGER SEAT - PREMIUM/; // asiento del instructor (abatible) con cinturón
+    { MC('cabina',[T(RB(0.4,0.1,0.42,0.04),4.68,5.3,-2.3),T(RB(0.1,0.5,0.42,0.04),4.46,5.6,-2.3,0,0,0.08),T(RB(0.32,0.34,0.3,0.03),4.68,5.08,-2.3)].map(NI),'#34383c',{rough:0.9});
+      MC('cabina',[new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(4.47,5.82,-2.12),new THREE.Vector3(4.6,5.55,-2.25),new THREE.Vector3(4.72,5.37,-2.42)]),16,0.01,4,false)],'#e06a14',{rough:0.7}); }
+    SUBT=/RADIO MODULE|CAB SPEAKERS|CAB SUN VISOR/; // consola superior: radio, climatización, luz de techo, parasol, parlantes
+    { MC('cabina',[T(RB(0.5,0.16,1.2,0.04),5.08,6.92,-3.0),T(RB(0.9,0.04,1.6,0.02),4.6,7.0,-3.0)].map(NI),'#2f3236',{rough:0.85});
+      MC('cabina',[cylY(0.07,0.02,24).translate(4.2,6.975,-3.0)],'#d9d2c0',{rough:0.3});
+      const pk=[]; for(const z of [-3.8,-2.2]){ pk.push(cylX(0.07,0.03,20).translate(3.43,6.85,z)); } MC('cabina',pk.map(NI),'#141516',{rough:0.9});
       addMesh('cabina',new RoundedBoxGeometry(0.02,0.24,0.7,2,0.01),'#1a2026',[5.3,6.68,-3.2],{edges:false,opacity:0.7,rough:0.3}); }
-    // marcos de ventana, pilares, sellos y manillas
+    SUBT=/CAB WINDOWS/; // marcos de ventana, pilares, sellos y manillas
     { const fr=[], X0=3.37, X1=5.43, Z0=-3.97, Z1=-2.03, Y0=5.95, Y1=6.78, yc=(Y0+Y1)/2, h=Y1-Y0;
       for(const [x,z] of [[X1,Z0],[X1,Z1],[X0,Z0],[X0,Z1]]) fr.push(new THREE.BoxGeometry(0.08,h,0.08).translate(x,yc,z));
       fr.push(new THREE.BoxGeometry(0.06,h,0.06).translate(3.95,yc,Z0),new THREE.BoxGeometry(0.06,h,0.06).translate(4.95,yc,Z0),new THREE.BoxGeometry(0.05,h,0.05).translate(4.45,yc,Z1));
       for(const y of [Y0,Y1]){ fr.push(new THREE.BoxGeometry(X1-X0,0.04,0.04).translate((X0+X1)/2,y,Z0),new THREE.BoxGeometry(X1-X0,0.04,0.04).translate((X0+X1)/2,y,Z1),new THREE.BoxGeometry(0.04,0.04,Z1-Z0).translate(X0,y,-3.0),new THREE.BoxGeometry(0.04,0.04,Z1-Z0).translate(X1,y,-3.0)); }
-      M('cabina',fr.map(NI),'#2a2c2f',{rough:0.8});
-      M('cabina',[T(RB(0.16,0.04,0.04,0.015),4.62,5.75,-3.92),cylBetween?T(cylY(0.016,0.45,8),5.36,6.35,-3.88):null].filter(Boolean).map(NI),'#1d1f22',{rough:0.6});
-      const lw=[]; for(const z of [-3.55,-2.6]){ const a=new THREE.Vector3(5.47,5.97,z), b=new THREE.Vector3(5.47,6.62,z+0.28); const d=b.clone().sub(a); const g=new THREE.BoxGeometry(0.012,d.length(),0.02); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize())); const mm=a.clone().add(b).multiplyScalar(0.5); g.translate(mm.x,mm.y,mm.z); lw.push(g); } M('cabina',lw.map(NI),'#121314',{}); }
-    // pared trasera: equipo de climatización con rejilla, extintor, porta manual, caja de colación
-    { M('cabina',[RB(0.12,0.5,0.9,0.03).translate(3.44,5.55,-3.0)],'#4a4f55',{rough:0.7}); const gr=[]; for(let k=0;k<9;k++) gr.push(new THREE.BoxGeometry(0.01,0.012,0.8).translate(3.505,5.37+k*0.045,-3.0)); M('cabina',gr.map(NI),neg,{});
-      M('cabina',[cylY(0.075,0.42,20).translate(3.5,5.2,-2.22),new THREE.SphereGeometry(0.075,16,8,0,Math.PI*2,0,Math.PI/2).translate(3.5,5.41,-2.22)].map(NI),'#c0261d',{rough:0.4});
-      M('cabina',[cylY(0.02,0.08,10).translate(3.5,5.48,-2.22),new THREE.BoxGeometry(0.1,0.02,0.03).translate(3.52,5.53,-2.22)].map(NI),neg,{metal:0.5});
-      M('cabina',[new THREE.BoxGeometry(0.03,0.36,0.04).translate(3.43,5.2,-2.13),new THREE.BoxGeometry(0.03,0.36,0.04).translate(3.43,5.2,-2.31)].map(NI),alu,{metal:0.7});
-      M('cabina',[RB(0.04,0.3,0.24,0.02).translate(3.42,5.6,-3.72),RB(0.3,0.22,0.22,0.03).translate(3.6,5.07,-3.75)].map(NI),'#25466b',{rough:0.7}); }
-    // pantallas e instrumentos con imagen (velocímetro, tacómetro, monitor, luces, interruptores, radio, clima, consola)
-    const host=M('cabina',[RB(0.02,0.02,0.02,0.005).translate(5.1,5.75,-3.15)],'#26282b',{});
+      MC('cabina',fr.map(NI),'#2a2c2f',{rough:0.8});
+      MC('cabina',[T(RB(0.16,0.04,0.04,0.015),4.62,5.75,-3.92),cylBetween?T(cylY(0.016,0.45,8),5.36,6.35,-3.88):null].filter(Boolean).map(NI),'#1d1f22',{rough:0.6});
+      const lw=[]; for(const z of [-3.55,-2.6]){ const a=new THREE.Vector3(5.47,5.97,z), b=new THREE.Vector3(5.47,6.62,z+0.28); const d=b.clone().sub(a); const g=new THREE.BoxGeometry(0.012,d.length(),0.02); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize())); const mm=a.clone().add(b).multiplyScalar(0.5); g.translate(mm.x,mm.y,mm.z); lw.push(g); } MC('cabina',lw.map(NI),'#121314',{}); }
+    SUBT=/^HVAC MODULE (?!INSTALLATION)/; // pared trasera: equipo de climatización con rejilla, extintor, porta manual, caja de colación
+    { MC('cabina',[RB(0.12,0.5,0.9,0.03).translate(3.44,5.55,-3.0)],'#4a4f55',{rough:0.7}); const gr=[]; for(let k=0;k<9;k++) gr.push(new THREE.BoxGeometry(0.01,0.012,0.8).translate(3.505,5.37+k*0.045,-3.0)); MC('cabina',gr.map(NI),neg,{});
+      MC('cabina',[cylY(0.075,0.42,20).translate(3.5,5.2,-2.22),new THREE.SphereGeometry(0.075,16,8,0,Math.PI*2,0,Math.PI/2).translate(3.5,5.41,-2.22)].map(NI),'#c0261d',{rough:0.4});
+      MC('cabina',[cylY(0.02,0.08,10).translate(3.5,5.48,-2.22),new THREE.BoxGeometry(0.1,0.02,0.03).translate(3.52,5.53,-2.22)].map(NI),neg,{metal:0.5});
+      MC('cabina',[new THREE.BoxGeometry(0.03,0.36,0.04).translate(3.43,5.2,-2.13),new THREE.BoxGeometry(0.03,0.36,0.04).translate(3.43,5.2,-2.31)].map(NI),alu,{metal:0.7});
+      MC('cabina',[RB(0.04,0.3,0.24,0.02).translate(3.42,5.6,-3.72),RB(0.3,0.22,0.22,0.03).translate(3.6,5.07,-3.75)].map(NI),'#25466b',{rough:0.7}); }
+    SUBT=/^GAUGE PANEL (?!INSTALLATION)/; // pantallas e instrumentos con imagen (velocímetro, tacómetro, monitor, luces, interruptores, radio, clima, consola)
+    const host=MC('cabina',[RB(0.02,0.02,0.02,0.005).translate(5.1,5.75,-3.15)],'#26282b',{});
     host.add(pant(dial('VELOCIDAD',70,10,'km/h',0,null),0.15,0.15,[5.025,5.79,-3.3]));
     host.add(pant(dial('MOTOR',25,5,'rpm x100',7.5,21),0.15,0.15,[5.025,5.79,-3.0]));
     host.add(pant(luces,0.4,0.05,[5.0,5.97,-3.15],0.8));
@@ -2433,6 +2471,7 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     host.add(pant(hvac,0.32,0.08,[4.79,6.9,-2.78],0.5));
     { const m=pant(consola,0.26,0.16,[4.32,5.465,-2.73],0.35); m.rotation.set(0,0,0); m.rotateY(-Math.PI/2); m.rotateX(-Math.PI/2); host.add(m); }
   }
+  SUBT=null;
   { const mr=[T(new THREE.BoxGeometry(0.06,0.5,0.3),5.7,6.2,-4.3),T(cylZ(0.025,0.6,6),5.6,6.2,-4.0)].map(g=>g.toNonIndexed()); M('cabina',mr,'#151515'); }
   // ---------- E · Eléctrico: gabinete auxiliar, faros, caja de baterías
   const sh24=[addMesh('electrico',new RoundedBoxGeometry(0.9,1.3,1.0,2,0.04),'#d8d2c4',[3.6,5.48,-1.25],{edges:false})];
@@ -2475,23 +2514,118 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
       // etapas telescópicas separadas: cada una se prolonga hacia adentro de la anterior para que al extenderse no queden huecos
       const HL=d.length(), Hd=d.clone().normalize(), tag=(m,k)=>{ m.userData.hoist={A:A.clone(),B:B.clone(),d:Hd.clone(),L:HL,k}; return m; }, e=0.27;
       tag(M('hidraulico',[seg(0.0,0.5,0.31),seg(0.47,0.5,0.34)],'#e0a21b',{metal:0.3,rough:0.45}),0);
-      tag(M('hidraulico',[seg(0.5-e,0.7,0.25)],'#d6dbe0',{metal:0.95,rough:0.12}),1); tag(M('hidraulico',[seg(0.69,0.71,0.27)],'#3d4045',{metal:0.6}),1);
-      tag(M('hidraulico',[seg(0.7-e,0.88,0.2)],'#d6dbe0',{metal:0.95,rough:0.12}),2); tag(M('hidraulico',[seg(0.87,0.89,0.22)],'#3d4045',{metal:0.6}),2);
+      tag(M('hidraulico',[seg(0.5-e,0.7,0.25)],'#e0a21b',{metal:0.3,rough:0.45}),1); tag(M('hidraulico',[seg(0.69,0.71,0.27)],'#3d4045',{metal:0.6}),1);
+      tag(M('hidraulico',[seg(0.7-e,0.88,0.2)],'#e0a21b',{metal:0.3,rough:0.45}),2); tag(M('hidraulico',[seg(0.87,0.89,0.22)],'#3d4045',{metal:0.6}),2);
       tag(M('hidraulico',[seg(0.88-e,1.0,0.15)],'#d6dbe0',{metal:0.95,rough:0.12}),3);
       [A,B].forEach((P,j)=>tag(M('hidraulico',[new THREE.TorusGeometry(0.16,0.07,10,24).translate(P.x,P.y,P.z),cylZ(0.08,0.42,14).translate(P.x,P.y,P.z)],'#6b7078',{metal:0.6}),j?3:0));
       const h0=A.clone().addScaledVector(d,0.12), h1=A.clone().addScaledVector(d,0.45); M('hidraulico',[tubeP([[h0.x,h0.y+0.3,z],[h0.x+0.3,h0.y,z*1.15],[0.6,2.4,z*1.1]],0.05),tubeP([[h1.x,h1.y+0.3,z],[h1.x+0.4,h1.y-0.2,z*1.18],[0.6,2.3,z*1.15]],0.05)],HOSE,{rough:0.7}).userData.hoist={A:A.clone(),B:B.clone(),d:Hd.clone(),L:HL,k:0}; }
     // ---------- H · Estanque hidráulico: filtros, visores, respiradero, mangueras de succión
-    { const tx=0.35, ty=2.75, tz=2.85;
-      M('hidraulico',[cylY(0.11,0.3,24).translate(tx-0.18,ty+1.02,tz-0.12),cylY(0.11,0.3,24).translate(tx+0.12,ty+1.02,tz+0.12)],'#e7e3d7',{rough:0.4});
-      M('hidraulico',[RB(0.6,0.1,0.5,0.03).translate(tx,ty+1.11,tz),cylY(0.06,0.2,14).translate(tx+0.3,ty+0.98,tz-0.3),cylY(0.1,0.08,18).translate(tx+0.3,ty+1.1,tz-0.3)],'#7d838a',{metal:0.6});
-      M('hidraulico',[RB(0.1,0.4,0.06,0.02).translate(tx+0.2,ty+0.3,tz+0.54),RB(0.1,0.4,0.06,0.02).translate(tx+0.2,ty-0.3,tz+0.54)],'#9fd3ff',{opacity:0.85,rough:0.2});
-      const st=[]; for(const y of [-0.6,0.6]) st.push(new THREE.TorusGeometry(0.575,0.035,8,40).rotateX(Math.PI/2).translate(tx,ty-0.1+y,tz)); M('hidraulico',st,'#c99600',{rough:0.5});
-      M('hidraulico',[tubeP([[tx+0.6,ty-1.0,tz-0.5],[tx+1.0,ty-1.15,tz-1.2],[1.5,2.3,1.3],[1.8,2.45,1.0]],0.11,14),tubeP([[tx+0.2,ty-1.0,tz-0.5],[tx+0.8,ty-1.2,tz-1.4],[1.5,2.25,1.45],[1.8,2.4,0.7]],0.09,14)],HOSE,{rough:0.7}); }
+    { const tx=0.35, ty=2.72, tz=-2.85, R0=0.55;
+      const enCara=(g,ang,dy,r=R0)=>g.rotateY(Math.PI-ang).translate(tx+Math.sin(ang)*r,ty+dy,tz-Math.cos(ang)*r);   // apoya una pieza sobre el manto del cilindro
+      M('hidraulico',[cylY(0.11,0.3,24).translate(tx-0.16,ty+1.1,tz+0.1),cylY(0.11,0.3,24).translate(tx+0.14,ty+1.1,tz-0.12)],'#e7e3d7',{rough:0.4});     // filtros de retorno
+      M('hidraulico',[cylY(0.3,0.06,32).translate(tx,ty+0.97,tz),cylY(0.06,0.2,14).translate(tx+0.3,ty+1.0,tz+0.25),cylY(0.1,0.08,18).translate(tx+0.3,ty+1.12,tz+0.25)],'#7d838a',{metal:0.6}); // tapa y respiradero
+      M('hidraulico',[enCara(RB(0.1,0.4,0.06,0.02),0.35,0.35,R0+0.02),enCara(RB(0.1,0.4,0.06,0.02),0.35,-0.25,R0+0.02)],'#9fd3ff',{opacity:0.85,rough:0.2});       // visores de nivel
+      M('hidraulico',[-0.5,0.5].map(dy=>new THREE.CylinderGeometry(R0+0.018,R0+0.018,0.09,48,1,true).translate(tx,ty+dy,tz)),'#c99600',{rough:0.5}); // zunchos
+      M('hidraulico',[enCara(new THREE.BoxGeometry(0.36,0.26,0.02),-0.3,0.35,R0-0.005)],'#f4f1e6',{rough:0.6});                                          // placa de niveles e instrucciones
+      M('hidraulico',[enCara(cylZ(0.07,0.1,14),0.25,-0.78),enCara(cylZ(0.05,0.08,12),-0.3,-0.78)],'#7d838a',{metal:0.7});                                   // tapón de drenaje y toma de muestras
+      M('hidraulico',[tubeP([[tx+0.3,ty-0.95,tz+0.3],[tx+0.7,ty-1.15,tz+1.2],[1.4,1.75,-0.3],[1.8,2.3,0.75]],0.11,14),tubeP([[tx+0.05,ty-0.95,tz+0.4],[tx+0.5,ty-1.2,tz+1.3],[1.2,1.7,-0.2],[1.65,2.25,0.6]],0.09,14)],HOSE,{rough:0.7}); }
+    // ---------- H · Peine de cañerías y mangueras por el costado izquierdo del bastidor (gabinete de válvulas → eje trasero), con abrazaderas
+    { const cn=[], mg=[], ab=[], Z=1.385;
+      for(let k=0;k<7;k++){ const y=2.43+k*0.055, g=tubeP([[1.45,3.38,2.1],[1.2,2.9,1.75],[0.9,y+0.1,Z+0.03],[0.3,y,Z],[-1.2,y,Z],[-2.3,y,Z],[-2.7,y+0.05,Z-0.12]],0.021,8); (k<3?cn:mg).push(g); }
+      for(const x of [0.5,-0.4,-1.3,-2.2]) ab.push(new THREE.BoxGeometry(0.07,0.44,0.07).translate(x,2.59,Z+0.01));
+      M('hidraulico',cn,'#e0a21b',{metal:0.4,rough:0.45}); M('hidraulico',mg,HOSE,{rough:0.75}); M('hidraulico',ab,'#8d9399',{metal:0.7}); }
+    // ---------- E · Cables de potencia (gabinete → motores de rueda) sobre el larguero, en mordazas
+    { const cb=[], mz=[];
+      for(const z of [1.19,1.26,1.33]) cb.push(tubeP([[2.3,4.55,z+0.25],[2.05,3.6,z+0.1],[1.6,2.95,z],[0.4,2.92,z],[-1.2,3.02,z],[-2.25,3.17,z],[-2.7,3.22,z-0.45],[-2.85,3.05,0.45]],0.036,8));
+      for(const [x,y] of [[1.2,2.93],[0.2,2.93],[-0.8,3.0],[-1.8,3.1]]) mz.push(new THREE.BoxGeometry(0.09,0.11,0.26).translate(x,y,1.26));
+      M('propulsion',cb,'#d9805f',{rough:0.6}); M('propulsion',mz,'#1d1f22',{rough:0.8,claro:false}); }
+    // ---------- R · Parte trasera del eje: barra de luces, placa (sin número) y tapa de inspección apernada
+    { const rx=-2.15-1.02;
+      M('electrico',[new THREE.BoxGeometry(0.06,0.26,1.7).translate(rx-0.03,3.2,0),new THREE.BoxGeometry(0.3,0.06,0.1).translate(rx+0.1,3.1,0.6),new THREE.BoxGeometry(0.3,0.06,0.1).translate(rx+0.1,3.1,-0.6)],'#2a2d31',{metal:0.5,claro:false});
+      M('electrico',[-1,1].flatMap(sd=>[cylX(0.075,0.05,18).translate(rx-0.08,3.2,sd*0.36),cylX(0.075,0.05,18).translate(rx-0.08,3.2,sd*0.72)]),'#c8281e',{claro:false,rough:0.35});
+      M('electrico',[-1,1].map(sd=>cylX(0.075,0.05,18).translate(rx-0.08,3.2,sd*0.54)),'#f4f1e6',{claro:false,rough:0.3});
+      M('susptras',[new THREE.BoxGeometry(0.03,0.42,0.86).translate(rx-0.02,3.56,0)],'#101214',{claro:false});
+      M('susptras',[new THREE.BoxGeometry(0.035,0.5,0.03).translate(rx-0.02,3.56,0.44),new THREE.BoxGeometry(0.035,0.5,0.03).translate(rx-0.02,3.56,-0.44),new THREE.BoxGeometry(0.035,0.03,0.9).translate(rx-0.02,3.79,0),new THREE.BoxGeometry(0.035,0.03,0.9).translate(rx-0.02,3.33,0)],'#d7f000',{claro:false});
+      const tp=[cylX(0.4,0.04,32).translate(rx+0.0,2.45,0)]; for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; tp.push(cylX(0.022,0.06,8).translate(rx-0.01,2.45+Math.cos(a)*0.35,Math.sin(a)*0.35)); }
+      M('susptras',tp,'#e0a21b',{metal:0.3,rough:0.5}); }
+    // ---------- F · Soplador de cubierta: voluta centrífuga con boca de descarga, motor con aletas, caja de bornes y cable
+    { const bx=3.3, by=4.36, bz=3.4, nA=o=>{ o.userData.noAJ=true; return o; };
+      nA(M('propulsion',[cylZ(0.4,0.46,32).translate(bx,by+0.5,bz),new THREE.BoxGeometry(0.42,0.5,0.46).translate(bx+0.25,by+0.72,bz),new THREE.BoxGeometry(0.9,0.08,0.7).translate(bx,by+0.05,bz-0.1),
+        new THREE.BoxGeometry(0.06,0.5,0.6).translate(bx-0.38,by+0.3,bz-0.1),new THREE.BoxGeometry(0.06,0.5,0.6).translate(bx+0.38,by+0.3,bz-0.1),cylZ(0.27,0.3,28).translate(bx,by+0.5,bz-0.62)],C.yel,{metal:0.3}));
+      nA(M('propulsion',[cylZ(0.17,0.34,24).translate(bx,by+0.5,bz-0.4),...Array.from({length:10},(_,k)=>new THREE.BoxGeometry(0.34,0.012,0.3).rotateZ(k*Math.PI/10).translate(bx,by+0.5,bz-0.4)),new THREE.BoxGeometry(0.16,0.12,0.16).translate(bx-0.16,by+0.68,bz-0.4)],'#8d9399',{metal:0.6}));
+      nA(M('propulsion',[cylZ(0.2,0.02,24).translate(bx,by+0.5,bz+0.235),...Array.from({length:6},(_,k)=>new THREE.BoxGeometry(0.4,0.012,0.012).rotateZ(k*Math.PI/6).translate(bx,by+0.5,bz+0.245))],'#3a3d42',{claro:false}));
+      nA(M('electrico',[tubeP([[bx-0.24,by+0.68,bz-0.4],[bx-0.4,by+0.4,bz-0.5],[bx-0.3,by+0.06,bz-0.75],[bx+0.3,by+0.04,bz-0.95]],0.028,8)],'#d9805f',{rough:0.6})); }
+    // ---------- E · Cajas de conexión sobre el larguero (prensaestopas) y caja de empalme de potencia junto al gabinete
+    { const cj=[], pe=[];
+      for(const [x,y,z] of [[2.6,2.3,1.4],[-2.9,2.62,1.4],[2.6,2.3,-1.4]]){ const sg=Math.sign(z); cj.push(RB(0.34,0.38,0.12,0.02).translate(x,y,z)); for(const [dx,dy] of [[-0.09,0.09],[0.09,0.09],[-0.09,-0.09],[0.09,-0.09]]) pe.push(cylZ(0.038,0.05,10).translate(x+dx,y+dy,z+sg*0.08)); }
+      const a1=M('electrico',cj,C.yel,{metal:0.3}), a2=M('electrico',pe,'#1b1c1e',{rough:0.7,claro:false}); a1.userData.noAJ=a2.userData.noAJ=true; }
+    // ---------- D · Estanque de combustible: tapa de inspección abisagrada, nervios y placa de datos sobre la cara exterior
+    { const zf=4.1, nA=o=>{ o.userData.noAJ=true; return o; };
+      nA(M('combustible',[cylZ(0.24,0.04,28).translate(0.75,1.95,zf),new THREE.BoxGeometry(0.16,0.07,0.05).translate(0.75,2.22,zf)],'#d9a300',{metal:0.3,rough:0.5}));
+      nA(M('combustible',[new THREE.BoxGeometry(0.42,0.3,0.012).translate(-0.2,3.45,zf+0.01)],'#c9cdd2',{metal:0.5,claro:false})); }
+    // ---------- Detalle fino al acercarse: pernería del collar, alas de largueros, parachoques, tapas y graseras
+    { const hx=(x,y,z,ax)=>{ const g=new THREE.CylinderGeometry(0.032,0.032,0.07,6); if(ax==='x') g.rotateZ(Math.PI/2); else if(ax==='z') g.rotateX(Math.PI/2); return g.translate(x,y,z); };
+      const col=[]; for(let k=0;k<22;k++){ const a=k/22*Math.PI*2, z=1.43*Math.cos(a), y=2.55+1.5*Math.sin(a); col.push(hx(1.962,y,z,'x'),hx(1.538,y,z,'x')); } fino('bastidor',col,'#8d9399');
+      const al=[]; for(let i=0;i<14;i++) for(const z of [0.86,1.34,-0.86,-1.34]) al.push(hx(1.3+i*0.35,2.858,z,'y')); for(const z of [1.1,-1.1]) for(const y of [3.2,2.9]) al.push(hx(-4.8,y,z+Math.sign(z)*0.262,'z'));
+      for(let i=0;i<15;i++) for(const y of [1.95,2.55]) al.push(hx(6.532,y,-2.8+i*0.4,'x')); fino('bastidor',al,'#8d9399');
+      const tp=[]; for(const dy of [-0.5,0.5]) tp.push(hx(0.35,2.72+dy,-2.85-0.6,'x')); for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; tp.push(hx(0.35+0.27*Math.cos(a),3.73,-2.85+0.27*Math.sin(a),'y')); } for(const dx of [-0.38,0.38]) for(const dy of [-0.43,0.43]) tp.push(hx(1.6+dx,3.9+dy,2.962,'z'));
+      for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; tp.push(hx(0.75+0.2*Math.cos(a),1.95+0.2*Math.sin(a),4.125,'z')); } fino('hidraulico',tp,'#8d9399');
+      const gr=[]; for(const z of [0.95,-0.95]) gr.push(new THREE.CylinderGeometry(0.012,0.016,0.05,6).translate(-4.8,3.2,z),new THREE.SphereGeometry(0.014,6,5).translate(-4.8,3.23,z)); fino('tolva',gr,'#c9a54a',{metal:0.8});
+      setTimeout(()=>FRAME.push(()=>{ const cerca=explodeF<0.02&&!heatMap&&!colorBySys&&(FP.on||camera.position.distanceTo(controls.target)<9.5);
+        for(const m of FINO){ let h=m.userData.host; if(h===undefined) h=m.userData.host=meshes.find(q=>q.userData.sys===m.userData.finoSys)||null; m.visible=cerca&&(!h||h.visible); } }),0); }
     // ---------- H · Bombas hidráulicas en tándem (levante + dirección) acopladas al alternador
     { const px=1.9, py=2.5, pz=0.9;
       M('hidraulico',[RB(0.35,0.42,0.42,0.04).translate(px-0.2,py,pz),RB(0.3,0.36,0.36,0.04).translate(px+0.15,py,pz),RB(0.25,0.3,0.3,0.04).translate(px+0.45,py,pz)],'#3d4146',{metal:0.5});
       M('hidraulico',[cylX(0.25,0.06,24).translate(px-0.4,py,pz),cylZ(0.09,0.14,16).translate(px-0.2,py,pz+0.25),cylZ(0.07,0.12,16).translate(px+0.15,py,pz+0.22)],ALU,{metal:0.7});
       M('hidraulico',[tubeP([[px-0.2,py,pz+0.32],[px-0.2,py+0.3,pz+0.9],[px,py+0.8,pz+1.4]],0.06),tubeP([[px+0.15,py,pz+0.3],[px+0.4,py+0.4,pz+0.9],[px+0.6,py+1.0,pz+1.3]],0.05)],HOSE,{rough:0.7}); }
+    // ---------- B · Motor: solenoides y narices de los motores de partida, compresor de A/C, separadores de agua y múltiple de mangueras bajo el cárter
+    { const st=[], nz=[], tr=[], cb=[];
+      for(const sd of [1,-1]){ st.push(cylX(0.045,0.26,14).translate(2.12,2.685,sd*0.55)); nz.push(new THREE.CylinderGeometry(0.07,0.1,0.14,18).rotateZ(Math.PI/2).translate(1.83,2.55,sd*0.55));
+        tr.push(cylY(0.022,0.05,8).translate(2.26,2.74,sd*0.55)); cb.push(tubeP([[2.26,2.76,sd*0.55],[2.35,2.95,sd*0.62],[2.5,3.1,sd*0.7],[2.9,3.12,sd*0.72]],0.022,6)); }
+      M('electrico',st,'#2d3034',{metal:0.4,rough:0.5}); M('electrico',nz,ALU,{metal:0.7}); M('electrico',tr,'#c62828',{claro:false}); M('electrico',cb,'#b3261e',{rough:0.6});
+      M('cabina',[cylX(0.085,0.24,20).translate(4.42,3.56,0.8),RB(0.12,0.1,0.16,0.02).translate(4.42,3.67,0.8)],ALU,{metal:0.7,rough:0.35});                      // compresor de A/C
+      M('cabina',[cylX(0.1,0.05,24).translate(4.58,3.56,0.8),cylX(0.06,0.07,16).translate(4.6,3.56,0.8)],'#1b1c1e',{rough:0.6,claro:false});
+      M('cabina',[RB(0.26,0.06,0.26,0.02).translate(4.42,3.44,0.76)],C.yel,{metal:0.3});
+      M('cabina',[tubeP([[4.36,3.7,0.8],[4.2,3.95,0.85],[3.8,4.05,0.9]],0.02,6),tubeP([[4.46,3.7,0.8],[4.4,4.0,0.92],[4.0,4.12,0.98]],0.016,6)],HOSE,{rough:0.7});
+      const cu=[], va=[], ca=[]; for(const k of [0,1]){ const x=2.95+k*0.22; ca.push(RB(0.15,0.07,0.15,0.02).translate(x,2.93,0.74)); cu.push(cylY(0.068,0.26,20).translate(x,2.76,0.74)); va.push(cylY(0.062,0.1,18).translate(x,2.58,0.74)); ca.push(cylY(0.02,0.04,8).translate(x,2.51,0.74)); }
+      M('combustible',cu,'#b9bec4',{metal:0.5,rough:0.4}); M('combustible',ca,ALU,{metal:0.7}); M('combustible',va,'#d9b45a',{opacity:0.6,rough:0.2});                               // separadores de agua con vaso
+      M('motor',[RB(0.34,0.13,0.22,0.03).translate(3.95,2.14,0)],C.yel,{metal:0.3});                                                                                // múltiple bajo el cárter
+      const mh=[]; for(const sd of [1,-1]) for(let k=0;k<3;k++) mh.push(tubeP([[3.84+k*0.11,2.14,sd*0.11],[3.84+k*0.11,2.16,sd*0.4],[3.7+k*0.18,2.3,sd*0.72],[3.6+k*0.2,2.55,sd*0.8]],0.03,7));
+      M('motor',mh,HOSE,{rough:0.75}); }
+    // ---------- H · Filtros hidráulicos colgantes, bloque de válvulas con solenoides y compensadores de las bombas
+    { const cab=[], cu=[], tu=[];
+      for(const x of [1.06,1.32]){ cab.push(RB(0.2,0.1,0.2,0.02).translate(x,2.44,-2.05)); cu.push(cylY(0.085,0.6,22).translate(x,2.09,-2.05)); tu.push(cylY(0.05,0.05,6).translate(x,1.77,-2.05)); }   // filtros de levante y dirección, costado izquierdo junto al estanque
+      M('hidraulico',cab,ALU,{metal:0.7}); M('hidraulico',cu,'#4b4f54',{metal:0.5,rough:0.5}); M('hidraulico',tu,'#8d9399',{metal:0.7});
+      M('hidraulico',[tubeP([[1.06,2.5,-2.05],[0.98,2.72,-2.2],[0.84,2.62,-2.42]],0.04,8),tubeP([[1.32,2.5,-2.05],[1.5,2.35,-1.4],[1.65,2.3,-0.3],[1.8,2.4,0.55]],0.04,8)],HOSE,{rough:0.7});
+      M('hidraulico',[RB(0.34,0.2,0.22,0.02).translate(1.35,3.02,1.72),RB(0.1,0.1,0.12,0.02).translate(1.7,2.76,0.9),RB(0.1,0.09,0.12,0.02).translate(2.05,2.72,0.9)],ALU,{metal:0.7,rough:0.35});
+      M('hidraulico',[0,1,2].flatMap(k=>[cylY(0.036,0.13,12).translate(1.24+k*0.11,3.18,1.72),cylY(0.02,0.03,8).translate(1.24+k*0.11,3.26,1.72)]),'#1b1c1e',{rough:0.6,claro:false});
+      M('hidraulico',[tubeP([[1.5,3.0,1.78],[1.6,3.15,1.95],[1.45,3.38,2.1]],0.028,7),tubeP([[1.2,3.0,1.78],[1.05,3.1,1.95],[1.3,3.4,2.1]],0.028,7)],HOSE,{rough:0.7}); }
+    // ---------- E · Arneses del motor con espiral protectora amarilla y mangueras de refrigerante azules, sujetos al costado del bloque
+    { M('electrico',[tubeP([[2.3,4.4,1.15],[2.22,3.5,0.95],[2.5,2.95,0.86],[3.4,2.9,0.86],[4.35,2.95,0.86]],0.05,8),tubeP([[2.3,4.4,-1.15],[2.22,3.5,-0.95],[2.5,2.95,-0.86],[3.6,2.9,-0.86]],0.045,8)],'#e3b400',{rough:0.6});
+      M('electrico',[2.7,3.3,3.9].flatMap(x=>[0.86,-0.86].filter(z=>z>0||x<3.6).map(z=>new THREE.TorusGeometry(0.058,0.012,6,14).rotateY(Math.PI/2).translate(x,2.92,z))),'#1b1c1e',{claro:false});
+      M('enfriamiento',[tubeP([[2.5,4.0,-0.7],[3.3,3.95,-0.78],[4.5,3.9,-0.8],[5.1,3.7,-0.9]],0.06,8),tubeP([[2.5,3.75,0.72],[3.4,3.7,0.8],[4.6,3.65,0.82],[5.1,3.3,0.95]],0.055,8)],'#3f6fb0',{rough:0.55}); }
+    // ---------- K · Cabina: extintor junto a la butaca y micrófono de radio con cable en espiral
+    { M('misc',[cylY(0.05,0.32,16).translate(4.22,5.2,-3.74),cylY(0.02,0.06,8).translate(4.22,5.39,-3.74)],'#c8281e',{claro:false,rough:0.4});
+      M('cabina',[new THREE.BoxGeometry(0.05,0.03,0.03).translate(4.25,5.42,-3.74),new THREE.BoxGeometry(0.03,0.09,0.045).translate(4.97,5.93,-2.78)],'#151618',{claro:false});
+      const pts=[]; for(let k=0;k<=40;k++){ const t=k/40; pts.push(new THREE.Vector3(4.96-0.05*t+0.012*Math.cos(t*50),5.88-0.28*t,-2.78+0.05*t+0.012*Math.sin(t*50))); }
+      M('cabina',[new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),120,0.004,4,false)],'#151618',{claro:false}); }
+    // ---------- Detalle fino de gabinetes de cubierta: juntas de puertas, manillas, bisagras, placas de advertencia y celosía (se ocultan con la carcasa)
+    { const X=5.012, ju=[], mn=[], bi=[], pl=[];
+      for(const z of [-0.67,0.12]) ju.push(new THREE.BoxGeometry(0.012,1.34,0.014).translate(X,5.2,z));
+      for(const [z0,z1] of [[-1.42,-0.67],[-0.67,0.12],[0.12,0.88]]){ mn.push(new THREE.BoxGeometry(0.035,0.18,0.04).translate(X+0.015,5.2,z1-0.09)); for(const y of [4.75,5.65]) bi.push(new THREE.BoxGeometry(0.02,0.1,0.035).translate(X,y,z0+0.04));
+        pl.push(new THREE.BoxGeometry(0.008,0.11,0.11).translate(X,5.55,(z0+z1)/2)); }
+      const a=fino('propulsion',[...ju,...mn],'#1d1f22',{metal:0.4,rough:0.6}), b2=fino('propulsion',bi,'#8d9399'), c=fino('propulsion',pl,'#f2c200',{metal:0.1,rough:0.6});
+      const lv=[]; for(let k=0;k<5;k++) lv.push(new THREE.BoxGeometry(0.025,0.07,0.72).rotateZ(0.5).translate(5.07,4.85+k*0.2,1.48)); lv.push(new THREE.BoxGeometry(0.035,0.2,0.04).translate(5.08,5.3,1.9));
+      const d=fino('electrico',lv,'#1d1f22',{metal:0.4,rough:0.6});
+      setTimeout(()=>{ for(const m of [a,b2,c]) if(SH.pot&&SH.pot[0]) m.userData.host=SH.pot[0]; if(SH.aux24&&SH.aux24[0]) d.userData.host=SH.aux24[0]; },0); }
+    // ---------- Ronda 9 · Tolva: planchas de desgaste del piso · Enfriamiento: abrazaderas, soportes y grifo de drenaje · Propulsión: mangueras de aire a los motores de rueda · Combustible: llenado rápido, respiradero y líneas al motor
+    { const pd=[]; for(let i=0;i<6;i++) for(const z of [-0.52,0.52]) pd.push(new THREE.BoxGeometry(1.08,0.03,0.98).translate(-4.3+i*1.14,4.845,z)); M('tolva',pd,'#7c8086',{metal:0.6,rough:0.5});
+      const ab=[]; for(const [x,y,z] of [[3.3,3.95,-0.78],[4.5,3.9,-0.8],[3.4,3.7,0.8],[4.6,3.65,0.82]]) ab.push(new THREE.TorusGeometry(0.066,0.012,6,16).rotateY(Math.PI/2).translate(x,y,z)); M('enfriamiento',ab,'#b9bec4',{metal:0.8,rough:0.3});
+      M('enfriamiento',[-1,1].flatMap(sd=>[new THREE.BoxGeometry(0.5,0.1,0.12).translate(5.3,1.95,sd*1.75),new THREE.BoxGeometry(0.1,0.45,0.12).translate(5.1,2.15,sd*1.75)]),C.yel,{metal:0.3});
+      M('enfriamiento',[cylY(0.03,0.08,8).translate(5.45,1.86,0.6),new THREE.BoxGeometry(0.08,0.015,0.02).translate(5.45,1.83,0.6)],'#c9a54a',{metal:0.8});
+      const mg=[]; for(const sd of [1,-1]) mg.push(tubeP([[RX+0.45,R+0.75,sd*0.55],[RX+0.3,R+0.7,sd*1.0],[RX+0.1,R+0.45,sd*1.45],[RX,R+0.15,sd*1.62]],0.07,10)); M('propulsion',mg,'#6b7078',{rough:0.8});
+      M('combustible',[cylX(0.07,0.12,16).translate(1.01,1.9,3.6),cylX(0.085,0.04,16).translate(1.09,1.9,3.6),cylY(0.035,0.14,10).translate(0.9,4.2,2.6),cylY(0.055,0.04,12).translate(0.9,4.28,2.6)],'#9aa1a8',{metal:0.7});
+      M('combustible',[tubeP([[0.6,4.14,2.4],[0.9,4.3,1.9],[1.6,3.6,1.2],[2.3,3.1,0.8]],0.025,7),tubeP([[0.75,4.14,2.4],[1.05,4.36,1.9],[1.75,3.7,1.25],[2.4,3.2,0.85]],0.02,7)],HOSE,{rough:0.7}); }
     // acumuladores de freno y dirección
     M('hidraulico',[cylY(0.13,1.05,24).translate(2.45,3.25,1.75),cylY(0.13,1.05,24).translate(2.75,3.25,1.75),cylY(0.11,0.6,22).translate(2.6,3.3,1.45)],'#e0a21b',{metal:0.3,rough:0.4});
     M('hidraulico',[2.45,2.75].flatMap(x=>[3.0,3.5].map(y=>new THREE.TorusGeometry(0.14,0.02,6,24).rotateX(Math.PI/2).translate(x,y,1.75).toNonIndexed())),'#4a4e54',{metal:0.6,claro:false});
@@ -2507,7 +2641,7 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
     cylBetween('susptras',[RX+0.2,2.9,-0.72],[-0.4,2.7,0.85],0.08,'#6b7078');
     M('susptras',[cylX(0.18,0.4,20).translate(1.5,2.0,0),RB(2.6,0.25,0.4,0.05).translate(0.2,2.0,0)],'#e0a21b',{metal:0.3});
     // ---------- J · Bastidor: alas de los largueros, refuerzos, soportes de pivote de tolva y de cilindros, parachoques con ganchos
-    { const fl=[]; for(const z of [1.1,-1.1]){ fl.push(new THREE.BoxGeometry(11.0,0.05,0.62).translate(0.6,2.82,z),new THREE.BoxGeometry(11.0,0.05,0.62).translate(0.6,1.78,z)); for(let i=0;i<12;i++) fl.push(new THREE.BoxGeometry(0.04,0.9,0.12).translate(-4.6+i*0.9,2.3,z+Math.sign(z)*0.27)); }
+    { const fl=[]; for(const z of [1.1,-1.1]){ for(let i=0;i<5;i++) fl.push(new THREE.BoxGeometry(0.04,0.9,0.12).translate(2.2+i*0.9,2.3,z+Math.sign(z)*0.27)); }
       M('bastidor',fl,'#d29a00',{rough:0.5});
       const piv=[]; for(const z of [1.1,-1.1]){ piv.push(RB(0.6,0.7,0.35,0.04).translate(-4.8,2.85,z),cylZ(0.14,0.5,16).translate(-4.8,3.05,z)); piv.push(RB(0.5,0.6,0.3,0.04).translate(-0.4,2.9,z*1.5)); }
       M('bastidor',piv,C.yel,{rough:0.5});
@@ -2516,14 +2650,14 @@ const ENCL=[], SH={}; // gabinetes y carcasas que se pueden abrir para ver su in
           hq.push(RB(0.1,0.42,0.42,0.02).translate(6.5,1.9,z)); pn.push(cylY(0.055,0.5,16).translate(6.76,1.9,z),cylY(0.085,0.05,16).translate(6.76,2.17,z)); ch.push(new THREE.TorusGeometry(0.035,0.01,6,12).translate(6.76,1.62,z)); }
         M('bastidor',hq,C.yel,{rough:0.5}); M('bastidor',pn,'#b9bec4',{metal:0.85,rough:0.25}); M('bastidor',ch,'#9aa1a8',{metal:0.7}); } }
     // ---------- C · Enfriamiento: estanque superior, mangueras al motor, estanque de expansión
-    M('enfriamiento',[RB(0.45,0.35,3.7,0.06).translate(RXp,RY+1.6,0),cylX(0.2,1.0,18).translate(RXp-0.2,RY+2.0,-1.0)],'#4b4f54',{metal:0.5});
+    M('enfriamiento',[RB(0.45,0.35,3.7,0.06).translate(RXp,RY+1.6,0),cylX(0.2,1.0,18).translate(RXp-0.2,RY+2.0,-1.0)],C.yel,{metal:0.3});
     M('enfriamiento',[cylY(0.06,0.12,16).translate(RXp-0.2,RY+2.25,-1.4)],'#9aa1a8',{metal:0.7});
     M('enfriamiento',[tubeP([[RXp-0.2,RY+1.4,0.9],[5.0,4.2,0.8],[4.75,4.15,0.2]],0.09,12),tubeP([[RXp-0.2,RY-1.3,0.9],[5.0,2.4,0.7],[4.77,3.25,0.42]],0.1,12),tubeP([[RXp-0.2,RY-1.3,-0.9],[5.0,2.4,-0.7],[4.77,3.25,-0.42]],0.1,12)],HOSE,{rough:0.7});
     // ---------- D · Estanque de combustible: tapa de llenado, visor de nivel, refuerzos y drenaje
-    M('combustible',[cylY(0.12,0.08,24).translate(0.0,4.15,-3.0),cylY(0.09,0.1,6).translate(0.0,4.22,-3.0)],'#9aa1a8',{metal:0.7});
-    M('combustible',[RB(0.06,1.4,0.12,0.02).translate(1.53,2.85,-3.9)],'#9fd3ff',{opacity:0.85,rough:0.2});
-    { const r=[]; for(const x of [-0.6,0.35,1.3]) r.push(RB(0.08,2.4,0.06,0.02).translate(x,2.75,-4.05)); M('combustible',r,'#c99600',{rough:0.5}); }
-    M('combustible',[cylY(0.04,0.15,10).translate(0.35,1.55,-3.4)],'#c9a54a',{metal:0.7});
+    M('combustible',[cylY(0.12,0.08,24).translate(0.0,4.15,3.0),cylY(0.09,0.1,6).translate(0.0,4.22,3.0)],'#9aa1a8',{metal:0.7});
+    M('combustible',[RB(0.06,1.4,0.12,0.02).translate(1.12,2.85,3.9)],'#9fd3ff',{opacity:0.85,rough:0.2});
+    { const r=[]; for(const x of [-0.6,0.15,0.9]) r.push(RB(0.08,2.4,0.06,0.02).translate(x,2.75,4.05)); M('combustible',r,'#c99600',{rough:0.5}); }
+    M('combustible',[cylY(0.04,0.15,10).translate(0.35,1.55,3.4)],'#c9a54a',{metal:0.7});
     // ---------- E · Eléctrico: caja de baterías con tapa y bornes, faros con marco, bocinas, ductos de cables por el bastidor
     { const bx=6.05, by=3.05, bz=-1.75; const tops=[]; for(let i=0;i<4;i++) tops.push(RB(0.32,0.05,0.42,0.02).translate(bx-0.0,by+0.33,bz-0.75+i*0.5)); M('electrico',tops,'#202224',{rough:0.6});
       const bt=[]; for(let i=0;i<4;i++) for(const dx of [-0.08,0.08]) bt.push(cylY(0.025,0.05,10).translate(bx+dx,by+0.38,bz-0.75+i*0.5)); M('electrico',bt,'#c0261d',{metal:0.4}); }
@@ -2927,13 +3061,13 @@ function focusSystem(i,{fly=true}={}){
     flyTo(c,Math.max(10,Math.min(24,r*1.3)),outward(c,0.35)); }
   renderTree(true); renderDetail(); renderCrumb();
 }
-function focusSubassembly(i,si){
+function focusSubassembly(i,si,at){ // at: punto tocado; si el ancla del subconjunto queda lejos (pieza simétrica del otro costado) la cámara se queda en la pieza
   histPush(); closeRing();
   if(focusSys!==i){ focusSys=i; applyMaterials(); }
   focusSub=si; selPart=null; applyMaterials(); setHash(hashFor(i,si));
   const u=BOM.sistemas[i].subs[si];
   if(dsOpen(i,si)){ applyMaterials(); const c=dsCenter(); flyTo(c,Math.max(3.5,Math.min(12,ds.spread*2.3)),ds.out.clone().setY(0.35).normalize()); }
-  else flyTo(u._pos,Math.max(5,Math.min(9,u.partes.length*1.6)),outward(u._pos));
+  else { const P=(at&&at.distanceTo(u._pos)>2.5)?at:u._pos; flyTo(P,Math.max(5,Math.min(9,u.partes.length*1.6)),outward(P)); }
   renderTree(); renderDetail(); renderCrumb(); $('#tab-tree').scrollTop=0;
 }
 function selectPart(i,si,pi,{fly=true}={}){
@@ -3292,10 +3426,51 @@ renderer.domElement.addEventListener('pointerup',e=>{
   // clic directo: ir al subconjunto del sistema más cercano al punto tocado
   ray.setFromCamera(ptr,camera);
   const h=ray.intersectObjects(meshes.filter(m=>m.userData.sys===s),false)[0];
-  if(h&&BOM.sistemas[i].subs.length){ let best=0,bd=1e9; BOM.sistemas[i].subs.forEach((u,k)=>{const d=u._pos.distanceTo(h.point); if(d<bd){bd=d;best=k;}}); focusSubassembly(i,best); }
+  if(h&&BOM.sistemas[i].subs.length) focusSubassembly(i,subDeMalla(i,h.object,h.point),h.point);
   else focusSystem(i);
 });
 renderer.domElement.addEventListener('dblclick',e=>{ if(!pick(e)) resetView(); });
+
+
+/* ---------------- Vínculo pieza → subconjunto del manual ----------------
+   Orden de prioridad: 1) patrón puesto al crear la malla (userData.sub); 2) regla por posición del sistema (VINC);
+   3) subconjunto más cercano al punto tocado, probando también el punto reflejado al otro costado (piezas simétricas
+   que el manual dibuja una sola vez) y respetando LH/RH cuando el nombre lo indica. Los patrones usan términos genéricos
+   de catálogo en inglés; si el manual cargado no tiene un nombre que calce, se cae al criterio de cercanía. */
+const VINC={
+  motor:[[/^AIR CLEANER(?! PIPING)/,c=>c.x>5.5&&Math.abs(c.z)>2.3&&c.y>2.9],[/AIR CLEANER PIPING/,c=>c.x>3.6&&Math.abs(c.z)>1.3&&c.y>3.7],
+    [/EXHAUST/,c=>c.y>4.2&&c.z>1.1&&c.x<3],[/^FAN/,c=>c.x>4.4&&c.x<5.15&&Math.abs(c.z)<1.45&&c.y<4.4],
+    [/ENGINE.*(MOUNTS|CRADLE|SUB-FRAME INSTALLATION)/,c=>c.y<2.75],[/ENGINE AND COMPONENTS/,()=>true]],
+  enfriamiento:[[/^HEAT EXCHANGER/,c=>c.x<3.8&&c.y<2.8],[/RADIATOR PIPING - HEAT/,c=>c.x<4.2],[/RADIATOR PIPING \d/,c=>c.x<5.2],
+    [/RADIATOR INSTALLATION - UPPER/,c=>c.y>4.1],[/RADIATOR INSTALLATION - LOWER/,c=>c.y<2.2],[/RADIATOR & SHROUD/,()=>true]],
+  combustible:[[/REMOTE FILL/,c=>c.x>6],[/FUEL TANK ASSEMBLY/,(c,z)=>c.z>2.1&&z.y>1.5],[/FUEL LEVEL/,c=>c.z>2.1&&c.y>4.05],
+    [/FUEL TANK|REMOTE FILL/,c=>c.z>2.1],[/FUEL SYSTEM PIPING/,()=>true]],
+  electrico:[[/HEADLIGHTS/,c=>c.x>6.3&&Math.abs(c.z)>1.5&&(c.y>4.4||(c.y>2.3&&c.y<2.8))],
+    [/AUXILIARY CONTROL CABINET INSTALLATION/,(c,z)=>z.y>0.9&&z.z>0.8&&c.y>4.4&&c.x>3&&c.x<5.4&&Math.abs(c.z)<2.2]],
+  propulsion:[[/CONTROL CABINET EXTERNAL WIRING - WHEE/,(c,z)=>z.x>3&&z.y<1.2&&z.z<1.2],[/REAR AXLE BLOWER DUCTS/,c=>c.x<0&&c.x>-2&&Math.abs(c.z)<0.6&&c.y<3]],
+  cabina:[[/AIR CONDITIONING PIPING/,c=>c.y<4.3]],
+  hidraulico:[[/HYDRAULIC TANK ASSEMBLY/,(c,z)=>c.z<-2.2&&c.x<1&&z.y>1.5],[/HYDRAULIC TANK (INSTALLATION|STRUCTURE|PIPING)/,c=>c.z<-2.2&&c.x<1.05&&c.x>-0.5],
+    [/HYDRAULIC TANK INSTALLATION/,c=>Math.abs(c.z+1.85)<0.3&&c.x>-0.3&&c.x<1&&c.y<2.6],[/(HOIST|STEERING) FILTER ASSEMBLY/,c=>c.z<-1.7&&c.x>0.9&&c.x<1.7&&c.y<3],
+    [/HYDRAULIC TANK PIPING - HOIST/,c=>c.y<2.3&&c.z<0&&c.z>-2&&c.x>0.3&&c.x<1.6],
+    [/HOIST CYLINDER/,c=>Math.abs(c.z)>1.2&&Math.abs(c.z)<2.1&&c.x>-2.4&&c.x<0.7&&c.y>2.2&&c.y<4.4],
+    [/BRAKE CABINET INSTALLATION/,(c,z)=>c.z>2&&c.x>1.1&&c.x<2.1&&c.y>3.3&&z.y>0.8],
+    [/BRAKE CABINET|BRAKE MANIFOLD|HOIST PILOT|RELAY VALVE|SHUTTLE/,c=>c.z>2&&c.x>1.1&&c.x<2.1&&c.y>3.3]],
+  bastidor:[[/^FRAME & UPRIGHTS|^FRAME$|BASTIDOR|CHASIS/,()=>true]],
+  ruedas:[[/FRONT WHEEL INSTALLATION/,c=>c.x>0],[/REAR WHEEL INSTALLATION - STANDARD/,c=>c.x<=0]],
+  tolva:[[/BODY PIVOT/,c=>c.x<-4.3&&c.y<3.8]],
+};
+const esLH=n=>/\b(LH|LEFT)\b/.test(n), esRH=n=>/\b(RH|RIGHT)\b/.test(n);
+function subDeMalla(i,m,p){ const S=BOM.sistemas[i], subs=S.subs; if(!subs.length) return -1;
+  let re=m&&m.userData.sub||null;
+  if(!re&&m){ const bb=new THREE.Box3().setFromObject(m), c=bb.getCenter(new THREE.Vector3()), sz=bb.getSize(new THREE.Vector3()); for(const [r,f] of (VINC[S.id]||[])) if(f(c,sz)){ re=r; break; } }
+  let cand=subs.map((u,k)=>k);
+  if(re){ const c2=cand.filter(k=>re.test(subs[k].nombre)); if(c2.length) cand=c2; }
+  const izq=p.z<-0.3, der=p.z>0.3, q=new THREE.Vector3(p.x,p.y,-p.z); let best=cand[0], bd=1e9;
+  for(const k of cand){ const u=subs[k]; if(!u._pos) continue; const n=u.nombre, lat=esLH(n)||esRH(n);
+    let d=Math.min(u._pos.distanceTo(p), lat?1e9:u._pos.distanceTo(q)+0.05);
+    if((esLH(n)&&der)||(esRH(n)&&izq)) d+=50;   // nunca ofrecer el lado contrario si hay otra opción
+    if(d<bd){ bd=d; best=k; } }
+  return best; }
 
 /* ---------------- Panel: árbol ---------------- */
 let query='';
@@ -4549,7 +4724,7 @@ function setBajo(on){ if(BAJO===on) return; BAJO=on; ground.visible=!on; scene.t
   const st=document.getElementById('stage'); if(st){ st.setAttribute('role','application'); st.setAttribute('aria-label','Visor 3D del equipo. Atajos de teclado con la tecla ?'); }
   const lbl=document.getElementById('labels'); if(lbl) lbl.setAttribute('aria-hidden','true');
 })();
-window.__app={THREE,FRAME,activarTab,asideAbrir,vistaAtras,atajosPanel,setLigero,get LIGERO(){return LIGERO;},tolvaToggle,escToggle,setBajo,get MEC(){return MEC;},cfg:{get v(){return CFG;},set:(k,v)=>{CFG[k]=v;applyCfg();},reset:()=>{Object.assign(CFG,{zoom:1,rot:1,mira:1,invY:false,camina:1,inercia:true,zoomCursor:true,ctrlZoom:true});applyCfg();}},walk:{on:()=>walkOn(),off:()=>walkOff(),escala:()=>walkEscala(),accion:()=>walkAccion(),cerca:()=>walkCerca(),tercera:()=>toggleTercera(),get esTercera(){return WALK.tercera;},get W(){return WALK;},get activo(){return FP.on&&FP.lugar==='walk';}},hitPoint:(cx,cy)=>{const h=hitPoint({clientX:cx,clientY:cy});return h?h.point.toArray():null;},flyToP:(t,dist,dir,then)=>{flyTo(new THREE.Vector3(...t),dist,dir?new THREE.Vector3(...dir):null); if(anim&&then) anim.then=then;},project:p=>{const v=new THREE.Vector3(...p),dc=v.distanceTo(camera.position),dm=center.distanceTo(camera.position);v.project(camera);const r=renderer.domElement;return {x:(v.x+1)/2*r.clientWidth,y:(1-v.y)/2*r.clientHeight,front:v.z<1,far:dc>dm+1.5};},setLabelsVisible:v=>{labelsEl.style.visibility=v?'':'hidden';},get scene(){return scene;},entrarLugar,salirLugar,LUG,setHeat:h=>{heatMap=h;applyMaterials();},get focusSys(){return focusSys;},get FP(){return FP;},verCabina,salirCabina,fpMirar,fpAsiento,FP_POI,galAbrir,galCerrar,get GAL(){return GAL;},fotoSistema,fotoMallas,fotoEnsamble,get MODELOS(){return MODELOS;},abrirEncl,cerrarEncl,get ENCL(){return ENCL;},get meshes(){return meshes;},foto:d=>fotoParte({desc:d},{nombre:"x"},0),ds:()=>ds,modeloDe,focusSubassembly,cargarEquipo,get EQ(){return EQ;},dsSet:v=>{dsOn=v;},openCluster,closeRing,get ring(){return ring;},setShadows,setExplode:v=>{explodeF=v;$('#explode').value=v*100;applyExplode();},setMode,addMeasurePoint,get notes(){return notes;},addToCart,get cart(){return cart;},hashFor,openFromHash,cam:(a,t)=>{anim=null;camera.position.set(...a);controls.target.set(...t);controls.update();},get BOM(){return BOM;},focusSystem,selectPart,resetView,parseManualLines,parseCSV,classify,labels:()=>labels};
+window.__app={subDeMalla,VINC,THREE,FRAME,activarTab,asideAbrir,vistaAtras,atajosPanel,setLigero,get LIGERO(){return LIGERO;},tolvaToggle,escToggle,setBajo,get MEC(){return MEC;},cfg:{get v(){return CFG;},set:(k,v)=>{CFG[k]=v;applyCfg();},reset:()=>{Object.assign(CFG,{zoom:1,rot:1,mira:1,invY:false,camina:1,inercia:true,zoomCursor:true,ctrlZoom:true});applyCfg();}},walk:{on:()=>walkOn(),off:()=>walkOff(),escala:()=>walkEscala(),accion:()=>walkAccion(),cerca:()=>walkCerca(),tercera:()=>toggleTercera(),get esTercera(){return WALK.tercera;},get W(){return WALK;},get activo(){return FP.on&&FP.lugar==='walk';}},hitPoint:(cx,cy)=>{const h=hitPoint({clientX:cx,clientY:cy});return h?h.point.toArray():null;},flyToP:(t,dist,dir,then)=>{flyTo(new THREE.Vector3(...t),dist,dir?new THREE.Vector3(...dir):null); if(anim&&then) anim.then=then;},project:p=>{const v=new THREE.Vector3(...p),dc=v.distanceTo(camera.position),dm=center.distanceTo(camera.position);v.project(camera);const r=renderer.domElement;return {x:(v.x+1)/2*r.clientWidth,y:(1-v.y)/2*r.clientHeight,front:v.z<1,far:dc>dm+1.5};},setLabelsVisible:v=>{labelsEl.style.visibility=v?'':'hidden';},get scene(){return scene;},entrarLugar,salirLugar,LUG,setHeat:h=>{heatMap=h;applyMaterials();},get focusSys(){return focusSys;},get FP(){return FP;},verCabina,salirCabina,fpMirar,fpAsiento,FP_POI,galAbrir,galCerrar,get GAL(){return GAL;},fotoSistema,fotoMallas,fotoEnsamble,get MODELOS(){return MODELOS;},abrirEncl,cerrarEncl,get ENCL(){return ENCL;},get meshes(){return meshes;},foto:d=>fotoParte({desc:d},{nombre:"x"},0),ds:()=>ds,modeloDe,focusSubassembly,cargarEquipo,get EQ(){return EQ;},dsSet:v=>{dsOn=v;},openCluster,closeRing,get ring(){return ring;},setShadows,setExplode:v=>{explodeF=v;$('#explode').value=v*100;applyExplode();},setMode,addMeasurePoint,get notes(){return notes;},addToCart,get cart(){return cart;},hashFor,openFromHash,cam:(a,t)=>{anim=null;camera.position.set(...a);controls.target.set(...t);controls.update();},get BOM(){return BOM;},focusSystem,selectPart,resetView,parseManualLines,parseCSV,classify,labels:()=>labels};
 window.__app.__dist=()=>camera.position.distanceTo(controls.target); window.__app.__tgt=()=>controls.target.toArray().map(v=>+v.toFixed(2));
 </script>
 <script>
