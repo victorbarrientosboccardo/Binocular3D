@@ -10,11 +10,11 @@
   const ITER = 600000;
   const VERS = {
     anon: { t: 'Binocular3D Estándar', tag: ['tagG', 'Demostración'], d: 'Camión diésel-eléctrico genérico con catálogo de demostración. Recorrido 3D, despieces, interiores de gabinetes, cabina en primera persona y galería 3D.' },
-    plus: { t: 'Binocular3D Plus', tag: ['tagY', 'Plus'], d: 'Catálogo a escala real (524 subconjuntos, 6.799 ítems) con consumo de repuestos y confiabilidad de una flota de demostración: mapa de calor 3D del gasto y de las detenciones, disponibilidad, MTBF y MTTR, Pareto de detenciones, vida de componentes (Weibull) y alertas.' },
+    plus: { t: 'Binocular3D Plus', tag: ['tagY', 'Plus'], d: 'Catálogo ampliado de demostración (453 subconjuntos, cerca de 6.600 ítems) con consumo de repuestos y confiabilidad de una flota de demostración: mapa de calor 3D del gasto y de las detenciones, disponibilidad, MTBF y MTTR, Pareto de detenciones, vida de componentes (Weibull) y alertas.' },
   };
   const ROLES = {
     demo: { n: 'Estándar', v: ['anon'] },
-    plus: { n: 'Plus', v: ['anon', 'plus'] },
+    plus: { n: 'Plus', v: ['plus'] },
     admin: { n: 'Administrador', v: ['anon', 'plus'], adm: true },
   };
   const $ = s => document.querySelector(s);
@@ -78,6 +78,8 @@
       || '<p class="mut">Tu clave no tiene versiones habilitadas. Contacta a Binocular3D.</p>';
     $('#openErr').hidden = true; $('#openProg').hidden = true;
     show('pMenu');
+    const uno = Object.keys(SES.keys).filter(v => VERS[v]);
+    if (uno.length === 1 && !SES.adm && !menu.visto) { menu.visto = true; const b = document.querySelector('[data-open]'); if (b) b.click(); } // clave de una sola versión: entra directo
   }
 
   async function abrir(v) {
@@ -87,7 +89,8 @@
       if (/^(https?:)?\/\//.test(src) || /^vendor\//.test(src)) return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('no se pudo cargar ' + src)); document.head.appendChild(s); });
       const s = document.createElement('script'); s.textContent = await leer(src); document.head.appendChild(s);
     };
-    const html = await leer('index.html');
+    let html = await leer('index.html');
+    if (Object.keys(SES.keys).length < 2) html = html.replace(/<button[^>]*__B3D_MENU[^>]*>[^<]*<\/button>/, ''); // una sola versión: sin botón «Mis versiones»
     try { sessionStorage.setItem('b3d.v', v); } catch (_) {}
     document.open(); document.write(html); document.close();
   }
