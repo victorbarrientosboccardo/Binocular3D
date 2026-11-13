@@ -7,7 +7,7 @@ Componentes de terceros usados por el sitio, con sus propias licencias:
 - three.js (MIT) — https://github.com/mrdoob/three.js
 - PDF.js (Apache-2.0) — https://github.com/mozilla/pdf.js
 - jsPDF (MIT) — https://github.com/parallax/jsPDF
-- DM Sans y DM Mono, alojadas en fonts/ (SIL Open Font License 1.1, texto en fonts/LICENSE-OFL.txt)
+- DM Sans, DM Mono y Space Grotesk, alojadas en fonts/ (SIL Open Font License 1.1, texto en fonts/LICENSE-OFL.txt)
 
 Los manuales de partes, números de parte e ilustraciones de los fabricantes pertenecen a sus dueños y no
 forman parte de este repositorio. El catálogo de demostración (app/data/demo-caex.js) y los datos de consumo y confiabilidad son ficticios.

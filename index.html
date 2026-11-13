@@ -17,60 +17,68 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link href="fonts/fonts.css" rel="stylesheet">
 <style>
-:root{--bg:#0d1b2a;--panel:#14273b;--panel2:#1b3149;--line:#29415c;--ink:#f8f6f2;--mut:#a9b6c4;--acc:#f2b705;--acc2:#ffcf3f;--oro:#b8975a;--arena:#e9dcc0}
+/* Identidad según el Manual de Normas Gráficas del Ecosistema Invictum v2.4: base clara (crema, marfil, arena), navy solo en navegación,
+   banda de énfasis y pie; un único acento (amarillo Binocular3D) en rellenos con texto navy; titulares en Space Grotesk, cuerpo en DM Sans. */
+:root{--crema:#f8f6f2;--marfil:#fdfcf9;--arena:#efe9df;--piedra:#ddd5c6;--niebla:#e8eef4;--navy:#0d1b2a;--navy2:#14273b;--ink:#0d1b2a;--mut:#5b6672;--gris:#6b6b6b;
+  --acc:#f2b705;--acc2:#ffcf3f;--acc100:#fdf3cd;--acc700:#7b6618;--line:#ddd5c6;--tit:'Space Grotesk','DM Sans',system-ui,sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;position:relative;background:var(--bg);color:var(--ink);font:300 16px/1.65 'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif}
+body{margin:0;position:relative;background:var(--crema);color:var(--ink);font:400 16px/1.65 'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif}
 a{color:inherit}
 .wrap{width:min(1160px,100% - 40px);margin:0 auto}
-header{position:sticky;top:0;z-index:5;background:rgba(13,27,42,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:5;background:var(--navy);border-bottom:3px solid var(--acc)}
 header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none}.brand img{width:34px;height:34px}
-.brand .wm{font:700 19px/1.1 'DM Sans',sans-serif}.brand .wm b{color:var(--acc)}
-.brand small{display:block;font:500 .64rem/1.4 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--oro);margin-top:2px}
-nav{display:flex;gap:22px;align-items:center}nav a{text-decoration:none;color:var(--mut);font-size:14px}nav a:hover{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:#0d1b2a;border-radius:9px;padding:12px 18px;font:600 15px/1 'DM Sans',sans-serif;text-decoration:none;white-space:nowrap}
-.btn:hover{background:var(--acc2)}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn.ghost:hover{border-color:var(--acc)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#f8f6f2}.brand img{width:34px;height:34px}
+.brand .wm{font:700 20px/1.1 var(--tit);letter-spacing:-.01em}.brand .wm b{color:var(--acc)}
+.brand small{display:block;font:500 .64rem/1.4 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#aebdcd;margin-top:2px}
+nav{display:flex;gap:22px;align-items:center}nav a{text-decoration:none;color:#c9d2dc;font-size:.8rem;font-weight:500}nav a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--navy);border:1.5px solid var(--acc);border-radius:9px;padding:12px 18px;font:600 15px/1 var(--tit);text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--acc2);border-color:var(--acc2)}
+.btn.sec{background:var(--marfil);color:var(--navy);border-color:var(--navy)}.btn.sec:hover{background:var(--acc100)}
+.btn.ghost{background:transparent;color:var(--navy);border-color:var(--piedra)}.btn.ghost:hover{border-color:var(--navy)}
 .btn.sm{padding:9px 14px;font-size:14px}
-.btn.sec{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}.btn.sec:hover{background:rgba(242,183,5,.12)}
-.eyebrow{margin:0 0 12px;font:500 .74rem/1 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--oro)}
-.hero{position:relative;overflow:hidden;padding:72px 0 56px;background:radial-gradient(900px 500px at 85% 0%,#1d3a57 0%,transparent 70%),linear-gradient(180deg,#0d1b2a 0%,#10233a 100%)}
+header .btn.sec{background:transparent;color:#f8f6f2;border-color:#6f87a1}header .btn.sec:hover{background:rgba(255,255,255,.08);border-color:#f8f6f2}
+.eyebrow{margin:0 0 12px;font:600 .74rem/1 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--acc700)}
+.hero{position:relative;overflow:hidden;padding:72px 0 56px;background:linear-gradient(180deg,var(--marfil) 0%,var(--crema) 100%);border-bottom:1px solid var(--line)}
 .hero .wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:48px;align-items:center}
-h1{font:700 clamp(34px,4.6vw,54px)/1.06 'DM Sans',sans-serif;margin:0 0 18px;letter-spacing:-.01em}h1 em{font-style:normal;color:var(--acc)}
-.lead{font-size:18px;color:#dfe6ee;margin:0 0 26px;max-width:34em}
+h1{font:700 clamp(34px,4.6vw,54px)/1.06 var(--tit);margin:0 0 18px;letter-spacing:-.02em}
+h1 em{font-style:normal;background:var(--acc);color:var(--navy);padding:0 .14em;border-radius:6px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.lead{font-size:18px;color:#2f4a66;margin:0 0 26px;max-width:34em}
 .cta{display:flex;gap:12px;flex-wrap:wrap}
-.note{margin-top:18px;font-size:13px;color:var(--mut)}
-.shot{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.5);background:#000}
+.note{margin-top:18px;font-size:13px;color:var(--gris)}
+.shot{border-radius:14px;overflow:hidden;border:1px solid var(--piedra);box-shadow:0 24px 60px rgba(13,27,42,.18);background:var(--navy)}
 .shot img{display:block;width:100%;height:auto}
-section{padding:72px 0}section.alt{background:#10233a;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-h2{font:700 clamp(26px,3vw,36px)/1.15 'DM Sans',sans-serif;margin:0 0 14px}
+section{padding:72px 0}section.alt{background:var(--arena);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+h2{font:700 clamp(26px,3vw,36px)/1.15 var(--tit);margin:0 0 14px;letter-spacing:-.015em}
+h3{font-family:var(--tit);font-weight:600}
 .sub{color:var(--mut);max-width:46em;margin:0 0 36px}
 .niv{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:n}
-.niv div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;position:relative}
-.niv div::before{counter-increment:n;content:counter(n);position:absolute;top:16px;right:18px;font:500 13px 'DM Mono',monospace;color:var(--oro)}
-.niv h3{margin:0 0 6px;font-size:18px}.niv p{margin:0;color:var(--mut);font-size:14.5px}
+.niv div{background:var(--acc100);border:1px solid #f3dc8e;border-radius:12px;padding:20px;position:relative}
+.niv div::before{counter-increment:n;content:counter(n);position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:7px;background:var(--navy);color:var(--acc);font:700 13px/26px var(--tit);text-align:center}
+.niv h3{margin:0 0 6px;font-size:18px}.niv p{margin:0;color:#4a4636;font-size:14.5px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--acc);border-radius:12px;padding:22px}
+.card{background:var(--marfil);border:1px solid var(--line);border-top:3px solid var(--acc);border-radius:12px;padding:22px}
 .card h3{margin:0 0 8px;font-size:17.5px}.card p{margin:0;color:var(--mut);font-size:14.5px}
-.card.plus{border-top-color:#4fb3d9}.tag{display:inline-block;font:700 10.5px/1 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:5px 7px;border-radius:5px;margin-bottom:10px;background:rgba(79,179,217,.12);color:#9fdcf2;border:1px solid #4fb3d9}
+.card.plus{border-top-color:var(--navy);background:var(--niebla)}
+.tag{display:inline-block;font:700 10.5px/1 var(--tit);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:5px;margin-bottom:10px;background:var(--navy);color:var(--acc)}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 figure{margin:0}figcaption{color:var(--mut);font-size:13.5px;margin-top:10px}
-table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
-th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left}th{background:var(--panel2);font-weight:600}
-td.c,th.c{text-align:center;width:150px}.si{color:var(--acc);font-weight:700}.no{color:#6f8296}
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--marfil);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
+th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left}th{background:var(--navy);color:#f8f6f2;font:600 14px var(--tit)}
+td.c,th.c{text-align:center;width:150px}.si{color:var(--acc700);font-weight:700}.no{color:#8693a0}
 tr:last-child td{border-bottom:0}
 ol.pasos{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:p}
-ol.pasos li{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 20px 20px 62px;position:relative;color:var(--mut);font-size:14.5px}
-ol.pasos li::before{counter-increment:p;content:counter(p);position:absolute;left:18px;top:18px;width:30px;height:30px;border-radius:50%;background:var(--acc);color:#0d1b2a;font:700 15px/30px 'DM Sans',sans-serif;text-align:center}
-ol.pasos b{color:var(--ink);display:block;margin-bottom:4px;font-weight:600}
-.aviso{background:rgba(242,183,5,.08);border:1px solid rgba(242,183,5,.5);border-radius:12px;padding:18px 20px;color:#f3e6bf;font-size:14.5px}
-.demo-nota{color:var(--mut);font-size:14px;line-height:1.6;margin:0}.demo-nota a{color:var(--mut)}
+ol.pasos li{background:var(--marfil);border:1px solid var(--line);border-radius:12px;padding:20px 20px 20px 62px;position:relative;color:var(--mut);font-size:14.5px}
+ol.pasos li::before{counter-increment:p;content:counter(p);position:absolute;left:18px;top:18px;width:30px;height:30px;border-radius:50%;background:var(--acc);color:var(--navy);font:700 15px/30px var(--tit);text-align:center}
+ol.pasos b{color:var(--ink);display:block;margin-bottom:4px;font:600 15.5px var(--tit)}
+.demo-nota{color:var(--gris);font-size:14px;line-height:1.6;margin:0}.demo-nota a{color:var(--gris)}
 .final{text-align:center}.final .cta{justify-content:center}
-footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mut);font-size:13px}
+#piloto{background:var(--navy);color:#f8f6f2}#piloto .eyebrow{color:var(--acc)}#piloto .sub{color:#aebdcd}
+.piloto{text-align:center}.piloto h2{max-width:760px;margin-left:auto;margin-right:auto}.piloto .sub{margin-left:auto;margin-right:auto}.piloto .cta{justify-content:center}
+footer{background:var(--navy);border-top:3px solid var(--acc);padding:28px 0;color:#aebdcd;font-size:13px}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
 footer img{height:22px;vertical-align:middle;margin-right:8px;opacity:.9}
 footer .ver{flex-basis:100%;text-align:right;font:500 11px 'DM Mono',monospace;letter-spacing:.04em;color:rgba(255,255,255,.28);user-select:none}
-.piloto{text-align:center}.piloto h2{max-width:760px;margin-left:auto;margin-right:auto}.piloto .cta{justify-content:center}
 @media (max-width:900px){.hero .wrap,.duo{grid-template-columns:1fr}.niv{grid-template-columns:1fr 1fr}.grid,ol.pasos{grid-template-columns:1fr}nav a:not(.btn){display:none}}
 </style>
 </head>
@@ -83,8 +91,8 @@ footer .ver{flex-basis:100%;text-align:right;font:500 11px 'DM Mono',monospace;l
       <a href="#funciones">Funciones</a>
       <a href="#versiones">Versiones</a>
 <a href="#piloto">Prueba piloto</a>
-      <a class="btn sm sec" href="app-estandar/">Estándar</a>
-<a class="btn sm" href="app/">Plus</a>
+      <a class="btn sm sec" href="acceso/">Estándar</a>
+<a class="btn sm" href="acceso/">Plus</a>
     </nav>
   </div>
 </header>
@@ -96,8 +104,8 @@ footer .ver{flex-basis:100%;text-align:right;font:500 11px 'DM Mono',monospace;l
       <h1>Del equipo completo al <em>número de parte</em>, como en un mapa.</h1>
       <p class="lead">Binocular3D convierte el manual en un modelo 3D navegable. Empiezas con la vista general y, al acercarte, aparecen los sistemas, los subconjuntos y cada número de parte. La versión Plus suma el consumo de repuestos y la confiabilidad de la flota sobre el mismo modelo.</p>
       <div class="cta">
-        <a class="btn sec" href="app-estandar/">Abrir versión Estándar</a>
-        <a class="btn" href="app/">Abrir versión Plus</a>
+        <a class="btn sec" href="acceso/">Abrir versión Estándar</a>
+        <a class="btn" href="acceso/">Abrir versión Plus</a>
         <a class="btn ghost" href="#como">Ver cómo funciona</a>
       </div>
       <p class="note">Demostración con un camión minero (CAEX) y datos genéricos. Funciona en el navegador, sin instalar nada.</p>
@@ -141,7 +149,7 @@ footer .ver{flex-basis:100%;text-align:right;font:500 11px 'DM Mono',monospace;l
 
 <section>
   <div class="wrap duo">
-    <figure><div class="shot"><img src="assets/capturas/consumo-mapa-calor.jpg" alt="Mapa de calor de consumo de repuestos sobre el modelo 3D" loading="lazy" width="1200" height="717"></div><figcaption>Mapa de calor de consumo: los sistemas que más gastan se ven en el propio equipo.</figcaption></figure>
+    <figure><div class="shot"><img src="assets/capturas/consumo-mapa-calor.jpg" alt="Mapa de calor de consumo de repuestos sobre el modelo 3D" loading="lazy" width="1200" height="717"></div><figcaption>Consumo de repuestos de la flota: gasto mensual, indicadores y alertas junto al modelo 3D.</figcaption></figure>
     <figure><div class="shot"><img src="assets/capturas/interior-gabinete.jpg" alt="Interior del gabinete de control y potencia" loading="lazy" width="1200" height="717"></div><figcaption>Dentro del gabinete de control y potencia: inversores, choppers, barra bus y tarjetas de control.</figcaption></figure>
   </div>
 </section>
@@ -190,7 +198,7 @@ footer .ver{flex-basis:100%;text-align:right;font:500 11px 'DM Mono',monospace;l
   <div class="wrap">
     <span><img src="assets/favicon.svg" alt="">© 2026 BINOCULAR3D · Copiapó, Chile</span>
     <span><a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos de uso</a> · <a href="licencias.txt">Licencias</a> · Demostración con datos genéricos · Binocular3D no está afiliado a ningún fabricante de equipos</span>
-    <span class="ver" aria-label="Versión del sitio">v2.17.1, 11.11.26</span>
+    <span class="ver" aria-label="Versión del sitio">v2.22.0, 12.11.26</span>
   </div>
 </footer>
 </body>

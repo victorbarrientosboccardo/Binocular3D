@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binocular3D · acceso</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link href="../fonts/fonts.css" rel="stylesheet">
+<link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<!-- 1. Acceso -->
+<section id="pLogin" class="page on">
+  <form class="loginCard" id="loginForm" autocomplete="on">
+    <p class="eyebrow">Acceso</p>
+    <div class="brand big"><img src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Visor de repuestos</small></div></div>
+    <p class="mut">Ingresa con el usuario y la clave que te entregó Binocular3D.</p>
+    <label>Usuario<input id="u" name="username" autocomplete="username" required autofocus></label>
+    <label>Clave<input id="p" name="password" type="password" autocomplete="current-password" required></label>
+    <div id="loginErr" class="err" hidden></div>
+    <button class="btn" id="loginB" type="submit">Ingresar</button>
+    <div id="loginProg" class="prog" hidden><i></i><span>Verificando…</span></div>
+    <p class="fine">El contenido está cifrado. Tu clave se usa solo en tu navegador para descifrarlo y nunca se envía a un servidor.</p>
+  </form>
+</section>
+
+<!-- 2. Mis versiones -->
+<section id="pMenu" class="page">
+  <header class="top">
+    <div class="brand"><img src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Visor de repuestos</small></div></div>
+    <div class="who"><span id="whoN"></span><span id="whoR" class="role"></span><button class="btn ghost sm" id="bAdmin" hidden>Administrar accesos</button><button class="btn ghost sm" id="bSalir">Cerrar sesión</button></div>
+  </header>
+  <main class="wrap">
+    <h1 id="hola"></h1>
+    <p class="mut" id="holaS">Estas son las versiones de Binocular3D habilitadas para tu clave.</p>
+    <div class="cards" id="cards"></div>
+    <div id="openErr" class="err" hidden></div>
+    <div id="openProg" class="prog" hidden><i></i><span>Descifrando la versión…</span></div>
+  </main>
+</section>
+
+<!-- 3. Administración -->
+<section id="pAdmin" class="page">
+  <header class="top">
+    <div class="brand"><img src="assets/favicon.svg" alt=""><div><span class="wm">Binocular<b>3D</b></span><small>Administración de accesos</small></div></div>
+    <div class="who"><span class="role">Administrador</span><button class="btn ghost sm" id="bVolver">Volver a mis versiones</button><button class="btn ghost sm" id="bSalir2">Cerrar sesión</button></div>
+  </header>
+  <main class="wrap">
+    <div class="admHead">
+      <div><h1>Usuarios y claves</h1><p class="mut">Los cambios quedan en esta pantalla hasta que los guardes. Una vez guardados en GitHub, el sitio se actualiza en 1–2 minutos.</p></div>
+      <div id="pend" class="pend" hidden>Cambios sin guardar</div>
+    </div>
+
+    <div class="grid2">
+      <form class="panel" id="fNuevo">
+        <h2 id="fTit">Nuevo usuario</h2>
+        <label>Usuario<input id="nU" required placeholder="ej. juan.perez" pattern="[A-Za-z0-9._@\-]{3,60}" title="3 a 60 caracteres: letras, números, punto, guion, guion bajo o @"></label>
+        <label>Nombre o empresa<input id="nN" placeholder="ej. Juan Pérez · Contratista XYZ"></label>
+        <label>Tipo de clave<select id="nR">
+          <option value="demo">Estándar · solo versión Estándar</option>
+          <option value="plus">Plus · Estándar + Plus</option>
+          <option value="admin">Administrador · ambas + administración</option>
+        </select></label>
+        <label>Vence (opcional)<input id="nV" type="date"></label>
+        <label>Clave<span class="row"><input id="nP" required minlength="12"><button type="button" class="btn ghost sm" id="nGen">Generar</button></span></label>
+        <p class="fine" id="nNota">Mínimo 12 caracteres (16 para administradores). Copia la clave al crear el usuario: después no se puede volver a ver, solo restablecer.</p>
+        <div class="row"><button class="btn" type="submit" id="nOk">Agregar usuario</button><button class="btn ghost" type="button" id="nCancel" hidden>Cancelar</button></div>
+        <div id="nErr" class="err" hidden></div>
+        <div id="cred" class="cred" hidden></div>
+      </form>
+
+      <div class="panel">
+        <h2>Guardar cambios</h2>
+        <p class="mut">El archivo de usuarios es <code>acceso/v/usuarios.json</code>. Puedes guardarlo directo en el repositorio de GitHub o descargarlo y subirlo a mano.</p>
+        <details id="ghCfg"><summary>Conexión con GitHub</summary>
+          <label>Dueño del repositorio<input id="gO" placeholder="tu-usuario"></label>
+          <label>Repositorio<input id="gR" placeholder="Binocular3D"></label>
+          <label>Rama<input id="gB" value="main"></label>
+          <label>Token de acceso (fine-grained, permiso Contents: Read and write solo en este repositorio)<input id="gT" type="password" autocomplete="off"></label>
+          <label class="chk"><input type="checkbox" id="gRem"> Recordar en este navegador</label>
+        </details>
+        <div class="row"><button class="btn" id="bGh">Guardar en GitHub</button><button class="btn ghost" id="bDl">Descargar usuarios.json</button></div>
+        <div id="gMsg" class="msg" hidden></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row between"><h2>Usuarios <span id="nUs" class="mut"></span></h2><input id="filt" placeholder="Filtrar…"></div>
+      <table class="tab"><thead><tr><th>Usuario</th><th>Nombre o empresa</th><th>Tipo</th><th>Vence</th><th>Creado</th><th></th></tr></thead><tbody id="tb"></tbody></table>
+      <p class="fine">Cambiar el tipo de un usuario o su clave requiere asignarle una clave nueva. Eliminar un usuario impide que vuelva a entrar, pero no borra lo que ya haya visto; si una clave se filtró, pide volver a cifrar la versión (ver README).</p>
+    </div>
+  </main>
+</section>
+
+<footer class="foot"><span>© 2026 BINOCULAR3D · Acceso solo para usuarios autorizados · <a href="../">Volver al sitio</a></span></footer>
+<script src="js/portal.js"></script>
+</body>
+</html>
